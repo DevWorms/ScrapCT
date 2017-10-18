@@ -8,7 +8,7 @@
 define("DATABASE", "teccheck");
 define("HOSTNAME", "localhost");
 define("USERNAME", "root");
-define("PASSWORD", "toor");
+define("PASSWORD", "dr4g0n");
 
 class DB
 {
