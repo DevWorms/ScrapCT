@@ -1,0 +1,13 @@
+/*****************************************
+* Configuracion de proxy con la libreria *
+*****************************************/
+
+http://docs.guzzlephp.org/en/stable/request-options.html?highlight=proxy#proxy
+https://github.com/FriendsOfPHP/Goutte/issues/220
+
+/********************************
+* Lista de paginas de tecnologia
+*********************************/
+
+
+
