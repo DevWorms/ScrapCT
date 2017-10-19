@@ -15,9 +15,11 @@
 		}
 		/**
 		 * Metodo que genera la construccion y peticion a la api
-		 * @return response JSON
+		 * @return respuesta associative array
 		 */
 		public function apiCall(){
+			//devolveremos esto
+			$respuesta = ['estado' => 0,'mensaje' => '' , 'resultado' => null];  
 			//construimos el url
 			//AUTENTICACION
 			$apiCallURL = "https://" . LinioConnection::NETWORK_ID . ".api.hasoffers.com/Apiv3/json?";
@@ -32,43 +34,44 @@
 			//ORDEN
 			//LIMITE
 			$apiCallURL .= "&limit=10";
-			
+
 			// INICIALIZAMOS EL CURL Y HACEMOS LA PETICION
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, $apiCallURL);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			$response = curl_exec($ch);
+			$resultado = curl_exec($ch);
 			curl_close($ch);
 
 			// Revertimos el json a arreglo asociativo para poder manipularlo en PHP
-			$response = json_decode($response, true);
+			$respuesta['resultado']=  json_decode($resultado, true);
 
-			// Verficamos si no hubo problema con la respeusta JSON para no generar una malformacion
+			// Verficamos si no hubo problema con la respuesta JSON para no generar una malformacion
 			if(json_last_error()!==JSON_ERROR_NONE){
-				throw new RuntimeException(
-					'API response not well-formed (json error code: '.json_last_error().')'
-				);
-			}
-
-			// IMPRECION DE PRUEBA
-			if(isset($response['response']['status']) && $response['response']['status']===1){
-				echo 'API call successful';
-				echo PHP_EOL;
-				// EL atributo dara contiene mi lista de productos
-				echo 'Response Data: <pre>'.print_r($response['response']['data'], true).'';
-				echo PHP_EOL;
+					$respuesta['estado'] = 0;
+					$respuesta['mensaje'] = "El json obtenido de la peticion esta mal formado";
+					$respuesta['resultado'] = null;
 			}else{
-				//SI EXISTE UN ERROR
-				echo 'API call failed'.(isset($response['response']['errorMessage'])?' ('.$response['response']['errorMessage'].')':'').'';
-				echo PHP_EOL;
-				echo 'Errors: <pre>'.print_r($response['response']['errors'], true).'';
-				echo PHP_EOL;
+				//ahora si el json esta correcto verificamos si la peticion fue exitosa
+				if(isset($respuesta['resultado']['response']['status']) 
+					&& $respuesta['resultado']['response']['status']===1){
+					$respuesta['estado'] = 1;
+					$respuesta['mensaje'] = "Peticion a la api EXITOSA";
+					$respuesta['resultado'] = $respuesta['resultado']['response']['data'];
+				}else{
+					// si la peticion devolvio un error 
+					$respuesta['estado'] = 0;
+					$respuesta['mensaje'] =(isset($respuesta['resultado']['response']['errorMessage'])?' ('.$respuesta['resultado']['response']['errorMessage'].')':'');
+					$respuesta['resultado'] = "Sin resultados";
+					
+				}
+				//FIN
 			}
+			//FIN
+			
+			return json_encode($respuesta);
 		}
-
-
 	}
 
 	$linio = new LinioConnection();
-	$linio->apiCall();
+	echo $linio->apiCall();
  ?>
