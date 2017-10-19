@@ -1,7 +1,7 @@
 <?php 
 	require_once dirname(__FILE__) . '/../app/DB.php';
 	/**
-	* User class
+	* Clase para las utilidades del usuario
 	*/
 	class User {
 
@@ -48,7 +48,7 @@
 	        	$respuesta['estado'] = 0;
             	$respuesta['mensaje'] = "Usuario o contraseña incorrecta ";
 	        }
-
+	        //devolvemos una respuesta json
 	        return json_encode($respuesta);
 		}
 
