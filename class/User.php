@@ -8,7 +8,8 @@
 		private $pdo;
 
 		public function __construct(){
-			$this->pdo = ConexionBD::obtenerInstancia()->obtenerBD();
+			//inicializamos conexion a la bd
+			$this->pdo = DB::init()->getDB();
 		}
 
 		/**
@@ -23,7 +24,7 @@
 
 			$contrasenaCifrada = hash('sha256', $contrasena);
 			//buscamos al usuario
-			$consultaSesion = "SELECT * FROM usuarios  WHERE correo = ? AND contrasena = ?";
+			$consultaSesion = "SELECT * FROM dw_usuarios  WHERE correo = ? AND contrasena = ?";
 	        $sentencia = $this->pdo->prepare($consultaSesion);
 	        $sentencia->bindParam(1, $correo);
 	        $sentencia->bindParam(2, $contrasenaCifrada);
@@ -32,15 +33,16 @@
 
 	        // Si existe el usuario
 	        if(count($resultado) > 0){
+	        	$resultado = $resultado[0];
 	        	//Generamos la sesion
 	        	session_start();
 	        	$_SESSION['id'] = $resultado['id'];
-	        	$_SESSION['usuario'] = $resultado['usuario'] . $resultado['apellido'];
+	        	$_SESSION['usuario'] = $resultado['usuario'] . " " .$resultado['apellido'];
 	        	$_SESSION['correo'] = $resultado['correo'];
 	        	session_write_close();
 
 	        	$respuesta['estado'] = 1;
-            	$respuesta['mensaje'] = "Bienvenido " . $resultado['usuario'] . $resultado['apellido'] ;
+            	$respuesta['mensaje'] = "Bienvenido " . $resultado['usuario'] . " " . $resultado['apellido'] ;
 	        }else{
 	        	//si no existe
 	        	$respuesta['estado'] = 0;
@@ -51,5 +53,23 @@
 		}
 
 
+	}
+
+	/**
+	 * RECEPCION DE PETICIONES
+	 */
+	
+	if(isset($_POST['post'])){
+		$post= $_POST['post'];
+		$usuario = new User();
+		switch ($post) {
+			case 'login':
+				echo  $usuario->inicarSesion($_POST['correo'], $_POST['contrasena']);
+				break;
+			
+			default:
+				header("Location: 404.php");
+				break;
+		}
 	}
  ?>

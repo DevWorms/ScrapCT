@@ -22,7 +22,9 @@
 					<input type="password" name="contrasena" id="contrasena" class="form-control">
 				</label>
 				<br>
+				<input type="hidden" name="post" id="post" value="login">
 				<button type="button" class="btn btn-primary" id="button-login">Ingresar</button>
+				<p id="confirmacion"></p>
 				<br><br>
 			</form>
 		</div>
@@ -34,6 +36,7 @@
     <script type="text/javascript" src="js/vendor/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/notify.min.js"></script>
     <script type="text/javascript" src="js/usuario.js"></script>
+
 </body>
 
 </html>
