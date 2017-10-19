@@ -14,7 +14,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class Scrapping
 {
-    private $goutte;
+    private $client;
     private $db;
 
     /**
@@ -23,7 +23,7 @@ class Scrapping
      */
     public function __construct()
     {
-        $this->goutte = new Client();
+        $this->client = new Client();
         $this->db = DB::init()->getDB();
     }
 
@@ -52,13 +52,14 @@ class Scrapping
         $pages = ["http://www.bestbuy.com.mx/c/productos/c3"];
 
         foreach ($pages as $page) {
-            $crawler = $this->goutte->request('GET', $page);
+            $crawler = $this->client->request('GET', $page);
 
             $nodeValues = $crawler->filter('li')->each(function (Crawler $node, $i) {
                 return $node->text();
             });
 
-            print_r($nodeValues);
+            //print_r($nodeValues);
+            echo $this->client->getResponse();
         }
     }
 }
