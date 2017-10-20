@@ -10,6 +10,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../app/DB.php';
 
 use Goutte\Client;
+use GuzzleHttp\Exception\ClientException;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Scrapping
@@ -52,15 +53,32 @@ class Scrapping
         $pages = ["http://www.bestbuy.com.mx/c/productos/c3"];
 
         foreach ($pages as $page) {
-            $crawler = $this->client->request('GET', $page);
+            // TODO si la tienda nos bloquea, hacemos la conexión a través de proxy
+            if ($this->isBlocked($page)) {
 
-            $nodeValues = $crawler->filter('li')->each(function (Crawler $node, $i) {
-                return $node->text();
-            });
+            } else {
+                $crawler = $this->client->request('GET', $page);
 
-            //print_r($nodeValues);
-            echo $this->client->getResponse();
+                $nodeValues = $crawler->filter('li')->each(function (Crawler $node, $i) {
+                    return $node->text();
+                });
+
+                //print_r($nodeValues);
+                echo $this->client->getResponse();
+            }
         }
+    }
+
+    public function isBlocked($url) {
+        try {
+            $client = new GuzzleHttp\Client();
+            $res = $client->request('GET', $url);
+            $block = ($res->getStatusCode() == 200) ? false : true;
+        } catch (ClientException $e) {
+            $block = true;
+        }
+
+        return $block;
     }
 }
 
