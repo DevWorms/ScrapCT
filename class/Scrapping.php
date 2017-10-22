@@ -8,6 +8,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../app/DB.php';
+require_once __DIR__ . '/../traits/SchemaTrait.php';
 
 use Goutte\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -15,6 +16,7 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class Scrapping
 {
+    use SchemaTrait;
     private $client;
     private $db;
 
@@ -92,10 +94,26 @@ class Scrapping
         $stm->execute();
 
         $response = $stm->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($response as $review) {
+            $metadata = $this->getMetaData($review["ID"]);
+            $links = $this->productsLink();
+            foreach ($links as $link) {
+                if (isset($metadata[$link])) {
+                    // TODO hacer scrapping, obtener el precio y comparar
+                }
+            }
+        }
 
         return $response;
     }
 
+
+    /**
+     * Obtiene la metadata de un producto
+     *
+     * @param $post_id
+     * @return array
+     */
     public function getMetaData($post_id) {
         $query = "SELECT * FROM wp_pwgb_postmeta
                     WHERE post_id = :post_id;";
