@@ -80,7 +80,33 @@ class Scrapping
 
         return $block;
     }
+
+    /**
+     * Obtiene todos los productos de la BD para hacer scrapping
+     */
+    public function getAllReviews() {
+        $query = "SELECT * FROM wp_pwgb_posts
+                    WHERE post_type = 'reviews' 
+                    AND post_status = 'publish';";
+        $stm = $this->db->prepare($query);
+        $stm->execute();
+
+        $response = $stm->fetchAll(PDO::FETCH_ASSOC);
+
+        return $response;
+    }
+
+    public function getMetaData($post_id) {
+        $query = "SELECT * FROM wp_pwgb_postmeta
+                    WHERE post_id = :post_id;";
+        $stm = $this->db->prepare($query);
+        $stm->bindValue(":post_id", $post_id, PDO::PARAM_INT);
+        $stm->execute();
+
+        $response = $stm->fetchAll(PDO::FETCH_ASSOC);
+        return $response;
+    }
 }
 
 $s = new Scrapping();
-$s->init();
+$s->getAllReviews();
