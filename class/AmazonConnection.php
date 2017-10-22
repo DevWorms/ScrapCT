@@ -95,6 +95,19 @@
             }
         }
 
+
+        /**
+         * Crea un producto, junto a sus metadatos
+         *
+         * @param $producto
+         * @param $precio
+         * @param $asin
+         * @param $link
+         * @param string $descripcion
+         * @param string $modelo
+         * @param string $fabricante
+         * @return array
+         */
         public function insertProduct($producto, $precio, $asin, $link, $descripcion = '', $modelo = '', $fabricante = '') {
             try {
                 $slug = $this->slugify($producto);
@@ -148,6 +161,12 @@
             }
         }
 
+        /**
+         * Convierte un texto, en una url
+         *
+         * @param $text
+         * @return mixed|string
+         */
         public function slugify($text)
         {
             $text = preg_replace('~[^\pL\d]+~u', '-', $text);
