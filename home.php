@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title></title>
+	<title>Tec-Check Web scraping</title>
 </head>
 <body>
+	<div class="row">
 
+		<?php 
+			include 'menu.php';
+		?>
+
+	</div>
 </body>
 </html>

@@ -4,7 +4,6 @@
 		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
 		<link href="https://fonts.googleapis.com/css?family=Bree+Serif|Work+Sans" rel="stylesheet"> 
 		<link rel="stylesheet" type="text/css" href="css/estilos.css">
-		
 		<title>ScrapCT</title>
 	</head>
 	<body>
