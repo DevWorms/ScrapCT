@@ -186,3 +186,4 @@
 
     //$a = new AmazonConnection();
 	//$a->updateAmazonPrice("123", "999");
+?>

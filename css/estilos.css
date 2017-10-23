@@ -1,5 +1,5 @@
 .card{
-	box-shadow: 10px 10px 5px #888888;
+	box-shadow: 5px 5px 2px #0068b9;
 	border-radius: 2%;
 	border: 1px solid #BDBDBD;
 	padding: 5%;
@@ -7,5 +7,28 @@
 
 .login{
 	text-align: center;
+}
+
+.colorPrimario{
+	background-color: #0068b9;
+}
+
+header{
+	width: 100%;
+	padding: 2.5%;
+	text-align: center;
+}
+
+.titulos{
+    font-family: 'Bree Serif', serif;
+}
+
+.cuerpo{
+	font-family: 'Work Sans', sans-serif;
+}
+
+footer{
+	text-align: center;
+	padding: 2.5%
 }
 
