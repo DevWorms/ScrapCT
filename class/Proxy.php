@@ -10,6 +10,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../app/DB.php';
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 
 class Proxy
 {
@@ -48,10 +49,11 @@ class Proxy
         $response = ["status" => 0];
 
         try {
-            $query = "INSERT INTO dw_proxy (ip, puerto) VALUES (:ip, :puerto)";
+            $query = "INSERT INTO dw_proxy (ip, puerto, protocolo) VALUES (:ip, :puerto, :protocolo)";
             $stm = $this->db->prepare($query);
             $stm->bindValue(":ip", $data["ip"], PDO::PARAM_STR);
             $stm->bindValue(":puerto", $data["puerto"], PDO::PARAM_STR);
+            $stm->bindValue(":protocolo", $data["protocolo"], PDO::PARAM_STR);
             $stm->execute();
 
             $response["status"] = 1;
@@ -100,13 +102,20 @@ class Proxy
 
             $client = new Client();
 
-            $response = $stm->fetchAll(PDO::FETCH_ASSOC);
-            foreach ($response as $proxy) {
-                $client->request('GET', '/', ['proxy' => ['http' => 'tcp://localhost:8125']]);
-                //print_r($client);
+            $result = $stm->fetchAll(PDO::FETCH_ASSOC);
+            $proxy = null;
+            foreach ($result as $proxyTest) {
+                $res = $client->request('GET', 'www.google.com', ['proxy' => ['socks5' => 'tcp://localhost:9050']]);
+                if ($res->getStatusCode() == 200) {
+                    $proxy = $proxyTest;
+                    break;
+                }
             }
 
-            $response["status"] = 1;
+            if ($proxy !== null) {
+                $response["status"] = 1;
+                $response["proxy"] = $proxy;
+            }
         } catch (Exception $e) {
             $response["message"] = $e->getMessage();
         }
