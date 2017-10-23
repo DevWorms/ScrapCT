@@ -20,6 +20,16 @@ trait SchemaTrait
             'walmart_pl',
             'amazon_affiliate_link',
             'linio_affiliate_link',
+
+            'liverpool_pl',
+            'office_max_pl',
+            'office_depot_pl',
+            'palacio_pl',
+            'soriana_pl',
+            'elektra_pl',
+            'sony_pl',
+            'costco_pl',
+            'radioshack_pl',
         ];
     }
 
@@ -37,6 +47,16 @@ trait SchemaTrait
             'price_sanborns',
             'price_linio',
             'price_amazon',
+
+            'price_liverpool',
+            'price_office_max',
+            'price_office_depot',
+            'price_palacio',
+            'price_soriana',
+            'price_elektra',
+            'price_sony',
+            'price_costco',
+            'price_radioshack',
         ];
     }
 }
