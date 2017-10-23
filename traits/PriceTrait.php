@@ -9,7 +9,6 @@
 trait PriceTrait
 {
     public function cleanPrice($price) {
-        // TODO remover de acuerdo a la sintaxis requerida
         // Remueve decimales
         if (strpos($price, ".") !== false) {
             $price = substr($price, 0, strpos($price, "."));
@@ -26,5 +25,15 @@ trait PriceTrait
 
         // Elimina espacios
         return trim($price);
+    }
+
+    public function specialCostcoPrice($price) {
+        foreach (preg_split("/((\r?\n)|(\r\n?))/", $price) as $line) {
+            if (strpos($line, "Precio Final") !== false) {
+                return $this->cleanPrice($line);
+            }
+        }
+
+        return $this->cleanPrice($price);
     }
 }
