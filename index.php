@@ -26,7 +26,6 @@
 				<button type="button" class="btn btn-primary" id="button-login">Ingresar</button>
 				<p id="confirmacion"></p>
 				<br><br>
-				<?php echo gmdate('Y-m-d\TH:i:s\Z'); ?>
 			</form>
 		</div>
 	</div>
