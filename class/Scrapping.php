@@ -70,6 +70,12 @@ class Scrapping
         }
     }
 
+    /**
+     * Si una conexión esta bloqueada por ip
+     *
+     * @param $url
+     * @return bool
+     */
     public function isBlocked($url) {
         try {
             $client = new GuzzleHttp\Client();
@@ -89,21 +95,119 @@ class Scrapping
         $query = "SELECT * FROM wp_pwgb_posts
                     WHERE post_type = 'reviews' 
                     AND post_status = 'publish';";
+
+        $query = "SELECT * FROM wp_pwgb_posts WHERE post_type = 'reviews' AND post_status = 'publish' LIMIT 0, 2;";
         $stm = $this->db->prepare($query);
         $stm->execute();
 
         $response = $stm->fetchAll(PDO::FETCH_ASSOC);
         foreach ($response as $review) {
+            echo "Producto: " . $review["post_title"] . "<br>";
+            // Obtiene los metadatos del producto
             $metadata = $this->getMetaData($review["ID"]);
+            // Nombres de las columnas de las diferentes tiendas
             $links = $this->productsLink();
             foreach ($links as $link) {
-                if (isset($metadata[$link])) {
-                    // TODO hacer scrapping, obtener el precio y comparar
+                foreach ($metadata as $mdata) {
+                    // Valida que exista el precio de esa tienda en la BD
+                    if (isset($mdata['meta_key']) && $mdata['meta_key'] == $link) {
+                        // Si tiene una url del producto en las tiendas...
+                        if (isset($mdata['meta_value']) && !empty($mdata['meta_value'])) {
+                            // Obtiene el precio, haciendo scrapping
+                            $price = $this->linkToScrap($link, $mdata['meta_value']);
+                            // Valida si el precio del producto cambio
+                            echo $mdata['meta_value'] . "<br><strong>Precio: </strong>" . $price;
+                            if ($price != null && $price != "" && !empty($price)) {
+                                $hasChanged = $this->priceHasChanged($mdata["meta_id"], $price);
+                                if ($hasChanged["change"]) {
+                                    if ($hasChanged["action"] == 'update') {
+                                        $oldPrice = $this->getPriceFromMetaData($metadata, $link);
+                                        echo " El precio cambio, precio original: " . $oldPrice;
+                                    } else {
+                                        echo " El precio no existe, hay que crearlo";
+                                    }
+                                }
+                            }
+                            echo "<br>";
+                            break;
+                        }
+                    }
+                }
+            }
+            echo "<br><br>";
+        }
+
+        return $response;
+    }
+
+    public function getPriceFromMetaData($metadata, $link) {
+        $oldPrice = null;
+        foreach ($metadata as $mdata) {
+            $tagPrice = $this->linkToPriceIndex($link);
+            if (isset($mdata['meta_key']) && $mdata['meta_key'] == $tagPrice) {
+                // Si tiene una url del producto en las tiendas...
+                if (isset($mdata['meta_value']) && !empty($mdata['meta_value'])) {
+                    $oldPrice = $mdata['meta_value'];
                 }
             }
         }
 
-        return $response;
+        return $oldPrice;
+    }
+
+    public function linkToPriceIndex($link) {
+        switch ($link) {
+            case 'sanborns_pl':
+                return 'price_sanborns';
+                break;
+            case 'claroshop_pl':
+                return 'price_claroshop';
+                break;
+            case 'coppel_pl':
+                return 'price_coppel';
+                break;
+            case 'sears_pl':
+                return 'price_sears';
+                break;
+            case 'sams_pl':
+                return 'price_sams';
+                break;
+            case 'bestbuy_pl':
+                return 'price_bestbuy';
+                break;
+            case 'walmart_pl':
+                return 'price_walmart';
+                break;
+            case 'liverpool_pl':
+                return 'price_liverpool';
+                break;
+            case 'office_max_pl':
+                return 'price_office_max';
+                break;
+            case 'office_depot_pl':
+                return 'price_office_depot';
+                break;
+            case 'palacio_pl':
+                return 'price_palacio';
+                break;
+            case 'soriana_pl':
+                return 'price_soriana';
+                break;
+            case 'elektra_pl':
+                return 'price_elektra';
+                break;
+            case 'sony_pl':
+                return 'price_sony';
+                break;
+            case 'costco_pl':
+                return 'price_costco';
+                break;
+            case 'radioshack_pl':
+                return 'price_radioshack';
+                break;
+            default:
+                return null;
+        }
     }
 
     /**
@@ -121,6 +225,95 @@ class Scrapping
 
         $response = $stm->fetchAll(PDO::FETCH_ASSOC);
         return $response;
+    }
+
+    /**
+     * Devuelve el precio de un producto de acuerdo al link y tienda que se envia
+     *
+     * @param $link
+     * @param $url
+     * @return null|string
+     */
+    public function linkToScrap($link, $url) {
+        switch ($link) {
+            case 'sanborns_pl':
+                return $this->getSanbornsPrice($url);
+                break;
+            case 'claroshop_pl':
+                return $this->getClaroShopPrice($url);
+                break;
+            case 'coppel_pl':
+                return $this->getCoppelPrice($url);
+                break;
+            case 'sears_pl':
+                return $this->getSearsPrice($url);
+                break;
+            case 'sams_pl':
+                return $this->getSamsPrice($url);
+                break;
+            case 'bestbuy_pl':
+                return $this->getBestBuyPrice($url);
+                break;
+            case 'walmart_pl':
+                return $this->getWalMartPrice($url);
+                break;
+            case 'liverpool_pl':
+                return $this->getLiverpoolPrice($url);
+                break;
+            case 'office_max_pl':
+                return $this->getOfficeMaxPrice($url);
+                break;
+            case 'office_depot_pl':
+                return $this->getOfficeDepotPrice($url);
+                break;
+            case 'palacio_pl':
+                return $this->getPalacioPrice($url);
+                break;
+            case 'soriana_pl':
+                return $this->getSorianaPrice($url);
+                break;
+            case 'elektra_pl':
+                return $this->getElektraPrice($url);
+                break;
+            case 'sony_pl':
+                return $this->getSonyPrice($url);
+                break;
+            case 'costco_pl':
+                return $this->getCostcoPrice($url);
+                break;
+            case 'radioshack_pl':
+                return $this->getRadioShackPrice($url);
+                break;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Devuelve true si el precio de un producto cambio o no se encontró
+     *
+     * @param $meta_id
+     * @param $price
+     * @return array
+     */
+    public function priceHasChanged($meta_id, $price) {
+        $res = ['change' => true, 'action' => 'update'];
+
+        $query = "SELECT meta_value FROM wp_pwgb_postmeta WHERE meta_id=:meta_id;";
+        $stm = $this->db->prepare($query);
+        $stm->bindValue(":meta_id", $meta_id, PDO::PARAM_INT);
+        $stm->execute();
+
+        $response = $stm->fetchAll(PDO::FETCH_ASSOC);
+        if (count($response) > 0) {
+            if ($response[0][0] == $price) {
+                $res['change'] = false;
+            }
+        } else {
+            $res['action'] = 'create';
+        }
+
+        return $res;
     }
 
     /**
@@ -669,6 +862,8 @@ class Scrapping
 }
 
 $s = new Scrapping();
+$s->getAllReviews();
+
 //echo $s->getSanbornsPrice("https://www.sanborns.com.mx/Paginas/Producto.aspx?ean=50644691195");
 //echo $s->getBestBuyPrice("http://www.bestbuy.com.mx/p/sony-pantalla-de-40-led-1080p-smart-tv-hdtv-negro/1000198293");
 //echo $s->getClaroShopPrice("http://wwvv.claroshop.com/producto/493261/teclado-iluv-bluetooth-portatil/");
