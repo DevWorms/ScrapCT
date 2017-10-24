@@ -137,6 +137,9 @@ class Scrapping
                 }
             }
             echo "<br><br>";
+
+            // ACtualiza el mejor precio y mejor tienda para del producto
+            $this->setBestPrice($review["ID"]);
         }
 
         return $response;
@@ -222,7 +225,7 @@ class Scrapping
     }
 
     /**
-     * Actualiza el precio para una tiende
+     * Actualiza el precio para una tienda
      *
      * @param $tag_store
      * @param $price
@@ -344,6 +347,72 @@ class Scrapping
         }
 
         return $res;
+    }
+
+    public function setBestPrice($product_id) {
+        $query = "SELECT * FROM wp_pwgb_postmeta WHERE post_id=:product_id;";
+        $stm = $this->db->prepare($query);
+        $stm->bindValue(":product_id", $product_id, PDO::PARAM_INT);
+        $stm->execute();
+
+        $response = $stm->fetchAll(PDO::FETCH_ASSOC);
+        $tag_prices = $this->productPrice();
+        $theBest = ['price' => 0];
+        $otherPrices = [];
+        $hasChanged = false;
+
+        // Obtiene el mejor precio anterior
+        foreach ($response as $metadata) {
+            // Mejor precio
+            if (isset($metadata['meta_key']) && $metadata['meta_key'] == 'price_best') {
+                $theBest['price'] = $metadata['meta_value'];
+            }
+
+            // Mejor tienda
+            if (isset($metadata['meta_key']) && $metadata['meta_key'] == 'best_shop') {
+                $theBest['shop'] = $metadata['meta_value'];
+            }
+
+            // Obtiene el precio de otras tiendas
+            foreach ($tag_prices as $price) {
+                if (isset($metadata['meta_key']) && $metadata['meta_key'] == $price) {
+                    $otherPrices[$price] = (int) $metadata['meta_value'];
+                }
+            }
+        }
+
+        $oldPrice = $theBest['price'];
+        // Obtiene el nuevo mejor precio
+        foreach ($otherPrices as $store => $price) {
+            if (($price > 0) && ($price < $theBest['price'])) {
+                $theBest['price'] = $price;
+                $theBest['shop'] = $store;
+                $hasChanged = true;
+            }
+        }
+
+        // Si el mejor precio cambio, lo actualiza y lo guarda en el historial
+        if ($hasChanged) {
+            $query = "INSERT INTO dw_historial (product_id, price_old, price_new, created_at) VALUES 
+                        (:product_id, :price_old, :price_new, NOW());";
+            $stm2 = $this->db->prepare($query);
+            $stm2->bindValue(":product_id", $product_id, PDO::PARAM_INT);
+            $stm2->bindValue(":price_old", $oldPrice, PDO::PARAM_INT);
+            $stm2->bindValue(":price_new", $theBest['price'], PDO::PARAM_INT);
+            $stm2->execute();
+
+            $query = "UPDATE wp_pwgb_postmeta SET meta_value=:price_new WHERE post_id=:product_id AND meta_key='price_best';";
+            $stm3 = $this->db->prepare($query);
+            $stm3->bindValue(":product_id", $product_id, PDO::PARAM_INT);
+            $stm3->bindValue(":price_new", $theBest['price'], PDO::PARAM_INT);
+            $stm3->execute();
+
+            $query = "UPDATE wp_pwgb_postmeta SET meta_value=:best_shop WHERE post_id=:product_id AND meta_key='best_shop';";
+            $stm4 = $this->db->prepare($query);
+            $stm4->bindValue(":product_id", $product_id, PDO::PARAM_INT);
+            $stm4->bindValue(":best_shop", $theBest['shop'], PDO::PARAM_STR);
+            $stm4->execute();
+        }
     }
 
     /**
@@ -856,7 +925,7 @@ class Scrapping
     }
 
     /**
-     * TODO error
+     * Devuelve el precio obtenido haciendo scrapping de la url de un producto en Office Liverpool
      *
      * @param $url
      * @return null|string
@@ -881,6 +950,7 @@ class Scrapping
 }
 
 $s = new Scrapping();
+//$s->setBestPrice(797);
 //$s->getAllReviews();
 
 //echo $s->getSanbornsPrice("https://www.sanborns.com.mx/Paginas/Producto.aspx?ean=50644691195");
