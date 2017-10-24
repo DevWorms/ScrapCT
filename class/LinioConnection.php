@@ -31,7 +31,7 @@
 			//CAMPOS PARA RECIBIR
 			//FILTROS
 			$apiCallURL .= "&filters[status]=active";
-			$apiCallURL .= "&filters[currency]=MXN":
+			$apiCallURL .= "&filters[currency]=MXN";
 			//ORDEN
 			//LIMITE
 			$apiCallURL .= "&limit=10";
