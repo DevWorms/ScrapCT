@@ -118,13 +118,15 @@ class Scrapping
                             // Valida si el precio del producto cambio
                             echo $mdata['meta_value'] . "<br><strong>Precio: </strong>" . $price;
                             if ($price != null && $price != "" && !empty($price)) {
-                                $hasChanged = $this->priceHasChanged($mdata["meta_id"], $price);
+                                $hasChanged = $this->priceHasChanged($metadata, $link, $price);
                                 if ($hasChanged["change"]) {
                                     if ($hasChanged["action"] == 'update') {
-                                        $oldPrice = $this->getPriceFromMetaData($metadata, $link);
+                                        $oldPrice = $hasChanged['oldPrice'];
                                         echo " El precio cambio, precio original: " . $oldPrice;
+                                        $this->updatePrice($link, $price, $mdata['post_id']);
                                     } else {
                                         echo " El precio no existe, hay que crearlo";
+                                        $this->createPrice($link, $price, $mdata['post_id']);
                                     }
                                 }
                             }
@@ -140,21 +142,12 @@ class Scrapping
         return $response;
     }
 
-    public function getPriceFromMetaData($metadata, $link) {
-        $oldPrice = null;
-        foreach ($metadata as $mdata) {
-            $tagPrice = $this->linkToPriceIndex($link);
-            if (isset($mdata['meta_key']) && $mdata['meta_key'] == $tagPrice) {
-                // Si tiene una url del producto en las tiendas...
-                if (isset($mdata['meta_value']) && !empty($mdata['meta_value'])) {
-                    $oldPrice = $mdata['meta_value'];
-                }
-            }
-        }
-
-        return $oldPrice;
-    }
-
+    /**
+     * Convierte el link de una tienda, al precio de una tienda
+     *
+     * @param $link
+     * @return null|string
+     */
     public function linkToPriceIndex($link) {
         switch ($link) {
             case 'sanborns_pl':
@@ -208,6 +201,42 @@ class Scrapping
             default:
                 return null;
         }
+    }
+
+    /**
+     * Crea el precio para una tiende
+     *
+     * @param $tag_store
+     * @param $price
+     * @param $post_id
+     */
+    public function createPrice($tag_store, $price, $post_id) {
+        $tag_price = $this->linkToPriceIndex($tag_store);
+
+        $query = "INSERT INTO wp_pwgb_postmeta (post_id, meta_key, meta_value) VALUES (:post_id, :meta_key, :price);";
+        $stm = $this->db->prepare($query);
+        $stm->bindValue(":post_id", $post_id, PDO::PARAM_INT);
+        $stm->bindValue(":meta_key", $tag_price, PDO::PARAM_STR);
+        $stm->bindValue(":price", $price, PDO::PARAM_INT);
+        $stm->execute();
+    }
+
+    /**
+     * Actualiza el precio para una tiende
+     *
+     * @param $tag_store
+     * @param $price
+     * @param $post_id
+     */
+    public function updatePrice($tag_store, $price, $post_id) {
+        $tag_price = $this->linkToPriceIndex($tag_store);
+
+        $query = "UPDATE wp_pwgb_postmeta SET meta_value=:price WHERE post_id=:post_id AND meta_key=:meta_key;";
+        $stm = $this->db->prepare($query);
+        $stm->bindValue(":post_id", $post_id, PDO::PARAM_INT);
+        $stm->bindValue(":meta_key", $tag_price, PDO::PARAM_STR);
+        $stm->bindValue(":price", $price, PDO::PARAM_INT);
+        $stm->execute();
     }
 
     /**
@@ -296,21 +325,22 @@ class Scrapping
      * @param $price
      * @return array
      */
-    public function priceHasChanged($meta_id, $price) {
-        $res = ['change' => true, 'action' => 'update'];
+    public function priceHasChanged($metadata, $tag_link, $price) {
+        $res = ['change' => true, 'action' => 'create'];
 
-        $query = "SELECT meta_value FROM wp_pwgb_postmeta WHERE meta_id=:meta_id;";
-        $stm = $this->db->prepare($query);
-        $stm->bindValue(":meta_id", $meta_id, PDO::PARAM_INT);
-        $stm->execute();
-
-        $response = $stm->fetchAll(PDO::FETCH_ASSOC);
-        if (count($response) > 0) {
-            if ($response[0][0] == $price) {
-                $res['change'] = false;
+        foreach ($metadata as $mdata) {
+            $tagPrice = $this->linkToPriceIndex($tag_link);
+            if (isset($mdata['meta_key']) && $mdata['meta_key'] == $tagPrice) {
+                $res['action'] = 'update';
+                // Si tiene una url del producto en las tiendas...
+                if (isset($mdata['meta_value']) && !empty($mdata['meta_value'])) {
+                    $res['oldPrice'] = $mdata['meta_value'];
+                    if ($mdata['meta_value'] == $price) {
+                        $res['change'] = false;
+                        break;
+                    }
+                }
             }
-        } else {
-            $res['action'] = 'create';
         }
 
         return $res;
