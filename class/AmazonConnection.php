@@ -339,15 +339,21 @@
 				return json_encode(array("status" => 0, "message" => $e->getMessage()));
 			}
 
-			return json_encode($this->allNodes);
+			return $this->allNodes;
 		}
-
+		
+		/**
+		 * itemSearch Metodo que devuelve 10 producto de la pagina indicada y del nodo indicado
+		 * @param  [string] $nodo   [categoria]
+		 * @param  [string] $pagina  pagina de resultados solo del 1 al 10
+		 * @return [type]         [description]
+		 */
 		public function itemSearch($nodo,$pagina){
 			$amazon = $this;
 			$parametros = array('Operation' => 'ItemSearch',
+										'ItemPage'=>"$pagina",
 										'Condition' => 'All',
-										'ItemPage'=>$pagina,
-										'BrowseNode' => $nodo, 
+										'BrowseNode' => "$nodo", 
 										'ResponseGroup' => 'ItemAttributes');
 
 			$peticion= $amazon->construirPeticion("com.mx", $parametros);
@@ -374,10 +380,24 @@
 
 			return $response;
 		}
+
+		public function cargarProcesoProductos(){
+			$amazon = $this;
+			$nodos = $amazon->getAllNodes($amazon->nodosBase);
+			$nodos = array_unique($nodos);
+			$c = 0;
+			foreach ($nodos as $nodo) {
+				if($nodo != ""){
+					for ($pagina = 1; $pagina <= 10; $pagina++) {
+						echo json_encode($amazon->itemSearch($nodo,$pagina)) . "<br> <hr> <br>" ;
+					}
+				}
+			}
+		}
 				
 	}
 
 	$amazon = new AmazonConnection();
-	echo json_encode($amazon->itemSearch('9482691011','1'));
+	echo $amazon->cargarProcesoProductos();
 	
 ?>
