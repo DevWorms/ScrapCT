@@ -1,6 +1,6 @@
 <?php
 		require_once __DIR__ . '/../app/DB.php';
-
+		error_reporting(E_ALL);
 	/**
 	* Clase para la conexion con el api de Amazon
 	*/
@@ -10,10 +10,18 @@
 		const AWS_API_KEY= 'AKIAISNMOFVRONHVLIBA';
 		const AWS_API_SECRET_KEY= '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';
 		const AWS_ASSOCIATE_TAG= 'tecchec-20';
-		CONST AWS_SERVICIO = 'AWSECommerceService';
+		const AWS_SERVICIO = 'AWSECommerceService';
+
+		public $nodosBase;
+		public $allNodes;
 
 		function __construct(){
 			$this->db = DB::init()->getDB();
+			$this->nodosBase = array(
+				'videojuegos' => '9482691011',
+				'electronicos' => '9482559011'
+				);
+			$this->allNodes = array("");
 		}
 
 		/**
@@ -214,6 +222,8 @@
 			$params['Version'] = $version;
 			// tag de socio para comision por click
 			$params['AssociateTag'] = AmazonConnection::AWS_ASSOCIATE_TAG;
+			//Queremos solo electronicos
+			$params['SearchIndex'] = "Electronics";
 			//ordenamos los parametros
 			ksort($params);
 			$url_query = array();
@@ -251,15 +261,20 @@
 
 		}
 
-		/**
-		 * Devuelve en un objeto de la clase SimpleXML el resultado de una peticion
-		 * @param  [string] $request [peticion]
-		 * @return asocc array   $response [objeto de response]
-		 */
-		private function getResponse($request){
+
+
+		public function browseNodeLookup($browseNodeId){
+			$amazon = $this;
+			$amazon->verifyHTTPorigins();
+
+			$parametros = array('Operation' => 'BrowseNodeLookup' ,
+							 			'BrowseNodeId' => $browseNodeId);
+
+			$peticion = $amazon->construirPeticion("com.mx",$parametros);
+
 			$response= ['estado' => 0,'mensaje' => '' , 'resultado' => null];
 			//parseamos el contenido a un string
-			$xmlContent = @file_get_contents($request);
+			$xmlContent = @file_get_contents($peticion);
 			
 			if($xmlContent === FALSE){
 				// si no se pudo obtener limpiamos todo
@@ -277,23 +292,54 @@
 			$response['resultado'] = $pxml->BrowseNodes;
 
 			return $response;
+
 		}
 
-		public function browseNodeLookup($browseNodeId){
-			$amazon = $this;
-			$amazon->verifyHTTPorigins();
+		public function getAllNodes($semilla){
+			try{
+				//PADRES
+				foreach ($semilla as  $nodo) {
+					array_push($this->allNodes, $nodo); 
+					$resultado = $this->browseNodeLookup($nodo)['resultado'];
+					if($resultado != null ){
+						//HIJOS
+						$hijos = $resultado->BrowseNode->Children->BrowseNode;
+						if(count($hijos)){
+							foreach ($hijos as $nodoHijo) {
+								array_push($this->allNodes, $nodoHijo->BrowseNodeId);
+								$resultado = $this->browseNodeLookup($nodoHijo->BrowseNodeId)['resultado'];
+								if($resultado != null ){
+									//NIETOS
+									$nietos = $resultado->BrowseNode->Children->BrowseNode;
+									if(count($nietos)){
+										foreach ($nietos as $nodoNieto) {
+											array_push($this->allNodes, $nodoNieto->BrowseNodeId);
+										}
+									}
+									//FIN NIETOS
+								}
+							}
+						}
+						//FIN HIJOS
+					}
+				}
+				// FIN PADRES
 
-			$parametros = array('Operation' => 'BrowseNodeLookup' ,
-							 			'BrowseNodeId' => $browseNodeId);
+			} catch (Exception $e) {
 
-			$peticion = $amazon->construirPeticion("com.mx",$parametros);
+				return json_encode(array("status" => 0, "message" => $e->getMessage()));
+			}
 
-			return $amazon->getResponse($peticion);
+			return json_encode($this->allNodes);
 		}
 				
-
 	}
 
 	$amazon = new AmazonConnection();
-	echo json_encode($amazon->browseNodeLookup("9687950011"));
+	$amazon->getAllNodes($amazon->nodosBase);
+	foreach ($amazon->allNodes as  $value) {
+		echo $value . "<br><br>";
+	}
+	echo "<br> <br> Elementos: ". count($amazon->allNodes);
+	
 ?>
