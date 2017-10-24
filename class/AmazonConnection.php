@@ -258,11 +258,15 @@
 				header('Access-Control-Allow-Credentials: true');
 				header('Access-Control-Max-Age: 86400');    // cache for 1 day
 			}
-
 		}
 
 
-
+		/**
+		 * Metodo que genera la funcion BrowseNodeLookup de amazon
+		 * este busca categorias o browsenode hijo y ancenstros del nodo que recibe
+		 * @param  [string] $browseNodeId [Nodo padre]
+		 * @return [associative] $response
+		 */
 		public function browseNodeLookup($browseNodeId){
 			$amazon = $this;
 			$amazon->verifyHTTPorigins();
@@ -295,6 +299,11 @@
 
 		}
 
+		/**
+		 * Regresa todos los hijos y nietos de los nodo semilla que se pase
+		 * @param  [array] $semilla [Nodos principales Electronics y Videjojuegos]
+		 * @return [array]          [Todos los nodos]
+		 */
 		public function getAllNodes($semilla){
 			try{
 				//PADRES
@@ -332,14 +341,43 @@
 
 			return json_encode($this->allNodes);
 		}
+
+		public function itemSearch($nodo,$pagina){
+			$amazon = $this;
+			$parametros = array('Operation' => 'ItemSearch',
+										'Condition' => 'All',
+										'ItemPage'=>$pagina,
+										'BrowseNode' => $nodo, 
+										'ResponseGroup' => 'ItemAttributes');
+
+			$peticion= $amazon->construirPeticion("com.mx", $parametros);
+
+
+			$response= ['estado' => 0,'mensaje' => '' , 'resultado' => null];
+			//parseamos el contenido a un string
+			$xmlContent = @file_get_contents($peticion);
+			
+			if($xmlContent === FALSE){
+				// si no se pudo obtener limpiamos todo
+				$response['estado'] = 0;
+				$response['mensaje'] = 'No se pudo obtener respuesta a esta peticion';
+				$response['resultado'] = null;
+				return $response;
+			}
+
+			$pxml = simplexml_load_string($xmlContent);
+
+			//devovlemos la respuesta structurada
+			$response['estado'] = 1;
+			$response['mensaje'] = 'Peticion exitosa';
+			$response['resultado'] = $pxml->Items;
+
+			return $response;
+		}
 				
 	}
 
 	$amazon = new AmazonConnection();
-	$amazon->getAllNodes($amazon->nodosBase);
-	foreach ($amazon->allNodes as  $value) {
-		echo $value . "<br><br>";
-	}
-	echo "<br> <br> Elementos: ". count($amazon->allNodes);
+	echo json_encode($amazon->itemSearch('9482691011','1'));
 	
 ?>
