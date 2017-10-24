@@ -349,6 +349,11 @@ class Scrapping
         return $res;
     }
 
+    /**
+     * Actualiza el mejor precio y mejor tienda de un producto
+     *
+     * @param $product_id
+     */
     public function setBestPrice($product_id) {
         $query = "SELECT * FROM wp_pwgb_postmeta WHERE post_id=:product_id;";
         $stm = $this->db->prepare($query);
