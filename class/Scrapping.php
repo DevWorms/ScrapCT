@@ -804,8 +804,10 @@ class Scrapping
      * @return null|string
      */
     public function getWalMartPrice($url) {
+        $product_id = substr($url, -14);
+
         $price = null;
-        $getUrl = "https://www.walmart.com.mx/WebControls/hlGetProductDetail.ashx?upc=" . $url;
+        $getUrl = "https://www.walmart.com.mx/WebControls/hlGetProductDetail.ashx?upc=" . $product_id;
         $text = utf8_decode(file_get_contents($getUrl));
         $text = str_replace("var detailInfo = ", "", $text);
         $text = str_replace(";", "", $text);
@@ -815,7 +817,7 @@ class Scrapping
         if (isset($json->offers) && count($json->offers) > 0) {
             $price = $json->offers[0]->price;
         } else {
-            $index = "_" . $url;
+            $index = "_" . $product_id;
             $price = $this->cleanPrice($json->c->facets->$index->p);
         }
 
@@ -862,22 +864,16 @@ class Scrapping
     public function getLiverpoolPrice($url) {
         $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+        $text = utf8_decode(file_get_contents($url));
 
-            // Precio actual
-            $elements = $crawler->filter('.precio-promocion');
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.precio-especial')->each(function($node){
-                    return $node->text();
-                });
+        foreach (preg_split("/((\r?\n)|(\r\n?))/", $text) as $line) {
+            if (strpos($line, "requiredlistprice") !== false) {
+                $price = $this->cleanPrice($line);
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            if (strpos($line, "requiredsaleprice") !== false) {
+                $price = $this->cleanPrice($line);
+            }
         }
 
         return $price;
@@ -908,8 +904,10 @@ $s = new Scrapping();
 //echo $s->getOfficeDepotPrice("https://www.officedepot.com.mx/officedepot/en/Categor%C3%ADa/Todas/Electr%C3%B3nica/Pantallas/PANTALLA-LG-55%22-%28SUHD%2C-SMART-TV%29/p/79661");
 //echo $s->getOfficeMaxPrice("http://www.officemax.com.mx/pantalla-jvc-32--smart-tv/p");
 //echo $s->getOfficeMaxPrice("http://www.officemax.com.mx/cable-hdmi-general-electric-73580-de-3-pies--69535/p");
-//echo $s->getWalMartPrice("00880608881303");
-//echo $s->getWalMartPrice("00690144309192");
-
+//echo $s->getWalMartPrice("https://www.walmart.com.mx/Celulares/Smartphones/Celulares-Desbloqueados/Smartphone-Samsung-Galaxy-J7-Pro-16GB-Negro-Desbloqueado_00880608881303");
+//echo $s->getWalMartPrice("https://www.walmart.com.mx/Celulares/Smartphones/Celulares-Desbloqueados/Huawei-Mate-S-32GB-Champagne-Huawei---CRRL-09_00690144309192");
 //echo $s->getLiverpoolPrice("https://www.liverpool.com.mx/tienda/smartphone-samsung-s8-5-8-pulgadas-negro-at-t/1057898018?skuId=1057898018");
+//echo $s->getLiverpoolPrice("https://www.liverpool.com.mx/tienda/iphone-8-plus-at-t/1062802902?skuId=1062691821");
+//echo $s->getLiverpoolPrice("https://www.liverpool.com.mx/tienda/iphone-se-at-t/1057592887?skuId=1047690281");
+
 //echo $s->getSamsPrice("https://www.sams.com.mx/microondas-y-hornos-electricos/horno-de-microondas-lg-1-5-pies-cubicos/000189096");
