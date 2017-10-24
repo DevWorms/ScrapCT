@@ -798,32 +798,25 @@ class Scrapping
     }
 
     /**
-     * TODO error
+     * Devuelve el precio obtenido haciendo scrapping de la url de un producto en Office Walmart
      *
      * @param $url
      * @return null|string
      */
     public function getWalMartPrice($url) {
         $price = null;
+        $getUrl = "https://www.walmart.com.mx/WebControls/hlGetProductDetail.ashx?upc=" . $url;
+        $text = utf8_decode(file_get_contents($getUrl));
+        $text = str_replace("var detailInfo = ", "", $text);
+        $text = str_replace(";", "", $text);
+        $text = stripslashes(html_entity_decode($text));
+        $json = json_decode($text);
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
+        if (isset($json->offers) && count($json->offers) > 0) {
+            $price = $json->offers[0]->price;
         } else {
-            $crawler = $this->client->request('GET', $url);
-
-            // Precio actual
-            $elements = $crawler->filter('.pricesPDP')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.lstPrc')->each(function($node){
-                    return $node->text();
-                });
-            }
-
-            $price = $this->cleanPrice($elements[0]);
+            $index = "_" . $url;
+            $price = $this->cleanPrice($json->c->facets->$index->p);
         }
 
         return $price;
@@ -892,7 +885,7 @@ class Scrapping
 }
 
 $s = new Scrapping();
-$s->getAllReviews();
+//$s->getAllReviews();
 
 //echo $s->getSanbornsPrice("https://www.sanborns.com.mx/Paginas/Producto.aspx?ean=50644691195");
 //echo $s->getBestBuyPrice("http://www.bestbuy.com.mx/p/sony-pantalla-de-40-led-1080p-smart-tv-hdtv-negro/1000198293");
@@ -915,7 +908,8 @@ $s->getAllReviews();
 //echo $s->getOfficeDepotPrice("https://www.officedepot.com.mx/officedepot/en/Categor%C3%ADa/Todas/Electr%C3%B3nica/Pantallas/PANTALLA-LG-55%22-%28SUHD%2C-SMART-TV%29/p/79661");
 //echo $s->getOfficeMaxPrice("http://www.officemax.com.mx/pantalla-jvc-32--smart-tv/p");
 //echo $s->getOfficeMaxPrice("http://www.officemax.com.mx/cable-hdmi-general-electric-73580-de-3-pies--69535/p");
+//echo $s->getWalMartPrice("00880608881303");
+//echo $s->getWalMartPrice("00690144309192");
 
-//echo $s->getWalMartPrice("https://www.walmart.com.mx/Celulares/Smartphones/Celulares-Desbloqueados/Smartphone-Samsung-Galaxy-J7-Pro-16GB-Negro-Desbloqueado_00880608881303");
 //echo $s->getLiverpoolPrice("https://www.liverpool.com.mx/tienda/smartphone-samsung-s8-5-8-pulgadas-negro-at-t/1057898018?skuId=1057898018");
 //echo $s->getSamsPrice("https://www.sams.com.mx/microondas-y-hornos-electricos/horno-de-microondas-lg-1-5-pies-cubicos/000189096");
