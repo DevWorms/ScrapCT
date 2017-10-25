@@ -381,77 +381,82 @@
 			return $response;
 		}
 
-		public function cargarProcesoProductos(){
-			$amazon = $this;
-			$nodos = $amazon->getAllNodes($amazon->nodosBase);
-			$nodos = array_unique($nodos);
-			$c = 1;
-			foreach ($nodos as $nodo) {
-				if($c  > 5){break;}
-				$c++;
-				if($nodo != ""){
-					for ($pagina = 1; $pagina <= 10; $pagina++) {
-						if($pagina > 5 ){ break; }
-						$items = $amazon->itemSearch($nodo,$pagina)['resultado'];
-						if($items != null){
-							$items = $items->Item;
-							foreach ($items as $item) {
-								echo $item->ASIN . "<br><br><br><br><br><br>";
-							}
-						} 
-						
-						echo "<h1>Nodo: $c Pagina: $pagina </h1>";
-					}	
-				}
-			}
-		}
-
+		
+		/**
+		 * Seccionamos los nodos en 20 partes para optimizar la busqueda 
+		 * @return aassoc_array arreglo con los nodos seccionados
+		 */
 		public function seccionarNodos(){
+			//arreglo de las cantidades para cada una de las 20 secciones
 			$cantidad_nodos_seccion = array();
+			// obtengo los nodos(categorias) de amazon
 			$nodos = $this->getAllNodes($this->nodosBase);
+			// elimino nodos duplicados
 			$nodos = array_unique($nodos);
+			//obtengo la cantidad total de nodos unicos
 			$total_nodos = count($nodos);
+			// entero de nodos que contendra cada seccion al menos 1 
 			$nodos_seccion = 1;
+			// variable de nodos sobrantes
 			$nodos_sobrantes = 0;
+			// deivison de nodos que tencan a cada seccion sin contar sobrantes
 			$division = 0;
+			// si se obtuvieron mas de 20
 			if($total_nodos > 20){
+				// el total de nodos entre las 20 secciones
 				$division = $total_nodos / 20;
+				// le quitamos lso decinales a la division y estos son los nodos minimos que tendra cada seccion
 				$nodos_seccion = floor($division);
+				// los nodos minimos por seccion obtenidos arroba * 20 nos dara menos del total, esta multiplicacion se la restamos al total y seran los nodos sobrantes
 				$nodos_sobrantes = $total_nodos - ($nodos_seccion * 20);
+				//recorremos 20 secciones
 				for($cont = 1; $cont<=20 ;$cont++){
+					// si hay nodos sobrantes
 					if($nodos_sobrantes > 0){
+						// distribumos de a un nodo sobrante entre las secciones
 						$nodos_sobrantes--;
 						$cantidad_nodos_seccion["seccion_" . $cont] =  $nodos_seccion + 1;
 					}else{
+						// si ya no hay nodos sobrantes le toca el minimo de nodos por seccion
 						$cantidad_nodos_seccion["seccion_" . $cont] =  $nodos_seccion;
 					}
 					
 				}
 			}else{
+				// si los nodos obtenidos son menos de 20
+				// los nodos por seccion son 1
 				$nodos_seccion = 1;
 				for($cont = 1; $cont<=20 ;$cont++){
+					// se distribuye de auno a las secciones y guardamos en el arreglo
 					$cantidad_nodos_seccion["seccion_" . $cont] =  $nodos_seccion;
 				}
 			}
+			// arreglo para guardar los nodos seccionados en relacion a la cantidad que le toca a cada seccion
 			$nodos_seccionados = array();
+			// indice actual
 			$current_index = 0;
+			// limite a recorrer
 			$limite = 0;
-
-
+			// obtenemos las cantidades que le tocan a cada seccion
 			foreach ($cantidad_nodos_seccion as $seccion => $cantidad) {
+				// arregl de nodos de la seccion actual
 				$nodos_save = array();
+				// el liminite sera la cantidad actual
 				$limite += $cantidad;
+				//recorremos del indice acutal al imite actual
 				for($it = $current_index ; $it<= ($limite-1) ; $it++){
+					// si hay nodo lo guardamos
 					if(isset($nodos[$it])){
 						$nodos_save[] = $nodos[$it];
 					}
 					
 				}
+				// el indice se mueve al ultimo limite obtenido
 				$current_index = $limite;
+				//asignamos lso nodos guardados a la seccion
 				$nodos_seccionados[$seccion] = $nodos_save;
 			}
-
-			
+			// impresion de prueba
 			foreach ($nodos_seccionados as $key => $value) {
 				echo " $key --> " .implode(" , ", $value) . " <br> <br>";
 			}
