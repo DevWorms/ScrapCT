@@ -354,7 +354,7 @@
 										'ItemPage'=>"$pagina",
 										'Condition' => 'All',
 										'BrowseNode' => "$nodo", 
-										'ResponseGroup' => 'ItemAttributes');
+										'ResponseGroup' => 'Medium');
 
 			$peticion= $amazon->construirPeticion("com.mx", $parametros);
 
@@ -385,19 +385,85 @@
 			$amazon = $this;
 			$nodos = $amazon->getAllNodes($amazon->nodosBase);
 			$nodos = array_unique($nodos);
-			$c = 0;
+			$c = 1;
 			foreach ($nodos as $nodo) {
+				if($c  > 5){break;}
+				$c++;
 				if($nodo != ""){
 					for ($pagina = 1; $pagina <= 10; $pagina++) {
-						echo json_encode($amazon->itemSearch($nodo,$pagina)) . "<br> <hr> <br>" ;
-					}
+						if($pagina > 5 ){ break; }
+						$items = $amazon->itemSearch($nodo,$pagina)['resultado'];
+						if($items != null){
+							$items = $items->Item;
+							foreach ($items as $item) {
+								echo $item->ASIN . "<br><br><br><br><br><br>";
+							}
+						} 
+						
+						echo "<h1>Nodo: $c Pagina: $pagina </h1>";
+					}	
 				}
 			}
+		}
+
+		public function seccionarNodos(){
+			$cantidad_nodos_seccion = array();
+			$nodos = $this->getAllNodes($this->nodosBase);
+			$nodos = array_unique($nodos);
+			$total_nodos = count($nodos);
+			$nodos_seccion = 1;
+			$nodos_sobrantes = 0;
+			$division = 0;
+			if($total_nodos > 20){
+				$division = $total_nodos / 20;
+				$nodos_seccion = floor($division);
+				$nodos_sobrantes = $total_nodos - ($nodos_seccion * 20);
+				for($cont = 1; $cont<=20 ;$cont++){
+					if($nodos_sobrantes > 0){
+						$nodos_sobrantes--;
+						$cantidad_nodos_seccion["seccion_" . $cont] =  $nodos_seccion + 1;
+					}else{
+						$cantidad_nodos_seccion["seccion_" . $cont] =  $nodos_seccion;
+					}
+					
+				}
+			}else{
+				$nodos_seccion = 1;
+				for($cont = 1; $cont<=20 ;$cont++){
+					$cantidad_nodos_seccion["seccion_" . $cont] =  $nodos_seccion;
+				}
+			}
+			$nodos_seccionados = array();
+			$current_index = 0;
+			$limite = 0;
+
+
+			foreach ($cantidad_nodos_seccion as $seccion => $cantidad) {
+				$nodos_save = array();
+				$limite += $cantidad;
+				for($it = $current_index ; $it<= ($limite-1) ; $it++){
+					if(isset($nodos[$it])){
+						$nodos_save[] = $nodos[$it];
+					}
+					
+				}
+				$current_index = $limite;
+				$nodos_seccionados[$seccion] = $nodos_save;
+			}
+
+			
+			foreach ($nodos_seccionados as $key => $value) {
+				echo " $key --> " .implode(" , ", $value) . " <br> <br>";
+			}
+
+	
 		}
 				
 	}
 
 	$amazon = new AmazonConnection();
-	echo $amazon->cargarProcesoProductos();
+	$amazon->seccionarNodos();
+
+
 	
 ?>
