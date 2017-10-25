@@ -197,6 +197,18 @@
 				return $text;
 		}
 
+
+        /**
+         * Busca un producto de Amazon en las demás tiendas, en base a su nombre, modelo y fabricante
+         *
+         * @param $name
+         * @param $model
+         * @param $company
+         */
+        public function searchProduct($name, $model, $company) {
+
+        }
+
 		/**
 		 * Metodo que construye la peticion base y el query de busqueda
 		 * @param  string $region  [ejemplo com.mx]
@@ -399,5 +411,3 @@
 
 	$amazon = new AmazonConnection();
 	echo $amazon->cargarProcesoProductos();
-	
-?>

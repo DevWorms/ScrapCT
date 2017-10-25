@@ -35,7 +35,6 @@ trait SchemaTrait
 
     public function productPrice() {
         return [
-            'price_radioshack',
             'price_cyberpuerta',
             'price_walmart',
             'price_bestbuy',
@@ -43,7 +42,6 @@ trait SchemaTrait
             'price_sams',
             'price_coppel',
             'price_claroshop',
-            'price_liverpool',
             'price_sanborns',
             'price_linio',
             'price_amazon',
@@ -57,6 +55,28 @@ trait SchemaTrait
             'price_sony',
             'price_costco',
             'price_radioshack',
+        ];
+    }
+
+    public function shops() {
+        return [
+            'Radioshack' => 'https://www.radioshack.com.mx/store/radioshack/en/search/?category=0-0-0-0&text=',
+            'Cyberpuerta' => 'https://www.cyberpuerta.mx/',
+            'Walmart' => 'https://www.walmart.com.mx/',
+            'Bestbuy' => 'http://www.bestbuy.com.mx/',
+            'Sears' => 'http://www.sears.com.mx/',
+            'Sams' => 'https://www.sams.com.mx/',
+            'Coppel' => 'http://www.coppel.com/',
+            'Claroshop' => 'http://wwvv.claroshop.com/',
+            'Liverpool' => 'https://www.liverpool.com.mx/tienda/',
+            'Sanborns' => 'https://www.sanborns.com.mx/Paginas/',
+            'Office Max' => 'http://www.officemax.com.mx/',
+            'Office Depot' => 'https://www.officedepot.com.mx/',
+            'Palacio de Hierro' => 'https://www.elpalaciodehierro.com/',
+            'Soriana' => 'https://www.soriana.com/',
+            'Elektra' => 'https://www.elektra.com.mx/',
+            'Sony' => 'https://store.sony.com.mx/',
+            'Costco' => 'http://www.costco.com.mx/',
         ];
     }
 }
