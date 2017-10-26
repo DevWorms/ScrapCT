@@ -126,12 +126,7 @@
 				try {
 						$slug = $this->slugify($producto);
 						$guid = "http://www.tec-check.com.mx/reviews/" . $slug;
-						$query = "INSERT INTO wp_pwgb_posts (post_author, post_date, post_date_gmt, post_content, post_title
-													post_excerpt, post_status, comment_status, ping_status, post_password, post_name, 
-													to_ping, pinged, post_modified, post_modified_gmt, post_content_filtered, post_parent, guid, 
-													menu_order, post_type, post_mime_type, comment_count) VALUES (
-													8, NOW(), NOW(), :descripcion, :producto, '', 'publish', 'open', 'open', '', :slug, '', '', 
-													NOW(), NOW(), '', '0', :guid, '0', 'reviews', '', '0')";
+						$query = "INSERT INTO wp_pwgb_posts (post_author, post_date, post_date_gmt, post_content, post_title,post_excerpt, post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_content_filtered, post_parent, guid, menu_order, post_type, post_mime_type, comment_count) VALUES (8, NOW(), NOW(), :descripcion, :producto, '', 'publish', 'open', 'open', '', :slug, '', '', NOW(), NOW(), '', '0', :guid, '0', 'reviews', '', '0')";
 						$pdo = $this->db->prepare($query);
 						$pdo->bindValue(":descripcion", $descripcion, PDO::PARAM_STR);
 						$pdo->bindValue(":producto", $producto, PDO::PARAM_STR);
@@ -171,7 +166,7 @@
 						$pdo6->bindValue(":post_id", $post_id, PDO::PARAM_INT);
 						$pdo6->execute();
 				} catch (Exception $e) {
-						return ["status" => 0, "message" => $e->getMessage()];
+						echo json_encode(["status" => 0, "message" => $e->getMessage()])."<br>";
 				}
 		}
 
@@ -279,7 +274,7 @@
 		 * @param  [string] $browseNodeId [Nodo padre]
 		 * @return [associative] $response
 		 */
-		public function browseNodeLookup($browseNodeId){
+		private function browseNodeLookup($browseNodeId){
 			$amazon = $this;
 			$amazon->verifyHTTPorigins();
 
@@ -308,7 +303,6 @@
 			$response['resultado'] = $pxml->BrowseNodes;
 
 			return $response;
-
 		}
 
 		/**
@@ -316,7 +310,7 @@
 		 * @param  [array] $semilla [Nodos principales Electronics y Videjojuegos]
 		 * @return [array]          [Todos los nodos]
 		 */
-		public function getAllNodes($semilla){
+		private function getAllNodes($semilla){
 			try{
 				//PADRES
 				foreach ($semilla as  $nodo) {
@@ -358,9 +352,9 @@
 		 * itemSearch Metodo que devuelve 10 producto de la pagina indicada y del nodo indicado
 		 * @param  [string] $nodo   [categoria]
 		 * @param  [string] $pagina  pagina de resultados solo del 1 al 10
-		 * @return [type]         [description]
+		 * @return [assoc array]  $response
 		 */
-		public function itemSearch($nodo,$pagina){
+		private function itemSearch($nodo,$pagina){
 			$amazon = $this;
 			$parametros = array('Operation' => 'ItemSearch',
 										'ItemPage'=>"$pagina",
@@ -399,6 +393,7 @@
 		 * @return aassoc_array arreglo con los nodos seccionados
 		 */
 		public function seccionarNodos(){
+			$total_secciones= 10;
 			//arreglo de las cantidades para cada una de las 20 secciones
 			$cantidad_nodos_seccion = array();
 			// obtengo los nodos(categorias) de amazon
@@ -414,15 +409,15 @@
 			// deivison de nodos que tencan a cada seccion sin contar sobrantes
 			$division = 0;
 			// si se obtuvieron mas de 20
-			if($total_nodos > 20){
+			if($total_nodos > $total_secciones){
 				// el total de nodos entre las 20 secciones
-				$division = $total_nodos / 20;
+				$division = $total_nodos / $total_secciones;
 				// le quitamos lso decinales a la division y estos son los nodos minimos que tendra cada seccion
 				$nodos_seccion = floor($division);
 				// los nodos minimos por seccion obtenidos arroba * 20 nos dara menos del total, esta multiplicacion se la restamos al total y seran los nodos sobrantes
-				$nodos_sobrantes = $total_nodos - ($nodos_seccion * 20);
+				$nodos_sobrantes = $total_nodos - ($nodos_seccion * $total_secciones);
 				//recorremos 20 secciones
-				for($cont = 1; $cont<=20 ;$cont++){
+				for($cont = 1; $cont<=$total_secciones ;$cont++){
 					// si hay nodos sobrantes
 					if($nodos_sobrantes > 0){
 						// distribumos de a un nodo sobrante entre las secciones
@@ -438,7 +433,7 @@
 				// si los nodos obtenidos son menos de 20
 				// los nodos por seccion son 1
 				$nodos_seccion = 1;
-				for($cont = 1; $cont<=20 ;$cont++){
+				for($cont = 1; $cont<=$total_secciones ;$cont++){
 					// se distribuye de auno a las secciones y guardamos en el arreglo
 					$cantidad_nodos_seccion["seccion_" . $cont] =  $nodos_seccion;
 				}
@@ -468,19 +463,104 @@
 				//asignamos lso nodos guardados a la seccion
 				$nodos_seccionados[$seccion] = $nodos_save;
 			}
-			// impresion de prueba
+			// cargamos a la base de datos los nodos por seccion
+			$query = "UPDATE dw_secciones_nodos SET nodos = :nodos WHERE seccion = :seccion";
+			$sentencia = $this->db->prepare($query);
 			foreach ($nodos_seccionados as $key => $value) {
-				echo " $key --> " .implode(" , ", $value) . " <br> <br>";
+				$str_nodos = implode(",", $value);
+				$sentencia->bindValue(":nodos", $str_nodos);
+				$sentencia->bindValue(":seccion", $key);
+				$sentencia->execute();
+			}
+		}
+
+		private function getProductosByNodos($nodos,$conjunto_paginas){
+			$pag_ini= 0;
+			$pag_fin = 0;
+
+			if($conjunto_paginas == 1){
+				$pag_ini = 1;
+				$pag_fin = 5;
+			}else if($conjunto_paginas == 2){
+				$pag_ini = 6;
+				$pag_fin = 10;
 			}
 
-	
+			foreach ($nodos as  $nodo) {
+				for ($pag=$pag_ini; $pag <=$pag_fin ; $pag++) { 
+					$response = $this->itemSearch($nodo, $pag);
+					$response = $response['resultado'];
+					if($response != null){
+						if(isset($response->Item)){
+							$items = $response->Item;
+							foreach ($items as $item) {
+								$producto = $item->ItemAttributes->Title;
+								if(isset($item->OfferSummary->LowestNewPrice->Amount)){
+									$precio = ($item->OfferSummary->LowestNewPrice->Amount / 100);
+									$precio= floor($precio);
+								}else if(isset($item->ItemAttributes->ListPrice->Amount)){
+									$precio = ($item->ItemAttributes->ListPrice->Amount / 100);
+									$precio= floor($precio);
+								}
+								$asin= $item->ASIN;
+								$link = $item->DetailPageURL;
+								$descripcion = $item->ItemAttributes->Feature;
+								$modelo = $item->ItemAttributes->Model;
+								$fabricante = $item->ItemAttributes->Manufacturer;
+
+								$this->insertProduct($producto, $precio, $asin, $link, $descripcion, $modelo, $fabricante);
+							}
+						}
+					}
+					
+				}
+			}
+		}
+
+		public function cargarProductos(){
+			$query = "SELECT * FROM dw_secciones_nodos WHERE seccion = :seccion ";
+			$sentencia = $this->db->prepare($query);
+			$nombre_seccion = "";
+			$total_secciones = 10;
+			$nodos = null;
+			$conjunto_paginas = 0;
+
+			for($i=1; $i<=$total_secciones  ; $i++){
+				$nombre_seccion = "seccion_".$i;
+				$sentencia->bindValue(":seccion", $nombre_seccion);
+				$sentencia->execute();
+				$datos = $sentencia->fetchAll();
+				if($datos[0]["conjunto_paginas"] == 0 || $datos[0]["conjunto_paginas"] == 1){
+					$conjunto_paginas = $datos[0]["conjunto_paginas"] + 1;
+					$nodos = explode(",", $datos[0]["nodos"]);
+					$queryPaginas = "UPDATE dw_secciones_nodos SET conjunto_paginas = :conjunto WHERE seccion = :seccion";
+					$sentencia = $this->db->prepare($queryPaginas);
+					$sentencia->bindValue(":seccion", $nombre_seccion);
+					$sentencia->bindValue(":conjunto", $conjunto_paginas);
+					$sentencia->execute();
+
+					break;
+				}
+				if($i == $total_secciones){
+					$refreshQuery = "UPDATE dw_secciones_nodos SET conjunto_paginas = :conjunto , nodos = :nodos";
+					$sentencia = $this->db->prepare($refreshQuery);
+					$sentencia->bindValue(":conjunto", 0);
+					$sentencia->bindValue(":nodos", "");
+					$sentencia->execute();
+					break;
+				}
+
+			}
+
+			$this->getProductosByNodos($nodos,$conjunto_paginas);
 		}
 				
 	}
 
 	$amazon = new AmazonConnection();
-	$amazon->seccionarNodos();
-
-
+	//ejecutar a una hora cronjob
+	//$amazon->seccionarNodos();
+	// ejecutar 20 veces, 1 vez cada 3 minuos cronjobs
+	$amazon->cargarProductos();
 	
 ?>
