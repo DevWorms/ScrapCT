@@ -464,11 +464,12 @@
 				$nodos_seccionados[$seccion] = $nodos_save;
 			}
 			// cargamos a la base de datos los nodos por seccion
-			$query = "UPDATE dw_secciones_nodos SET nodos = :nodos WHERE seccion = :seccion";
+			$query = "UPDATE dw_secciones_nodos SET nodos = :nodos,conjunto_paginas= :conjunto_paginas WHERE seccion = :seccion";
 			$sentencia = $this->db->prepare($query);
 			foreach ($nodos_seccionados as $key => $value) {
 				$str_nodos = implode(",", $value);
 				$sentencia->bindValue(":nodos", $str_nodos);
+				$sentencia->bindValue(":conjunto_paginas", 0fi);
 				$sentencia->bindValue(":seccion", $key);
 				$sentencia->execute();
 			}
@@ -507,8 +508,18 @@
 								$descripcion = $item->ItemAttributes->Feature;
 								$modelo = $item->ItemAttributes->Model;
 								$fabricante = $item->ItemAttributes->Manufacturer;
-
-								$this->insertProduct($producto, $precio, $asin, $link, $descripcion, $modelo, $fabricante);
+								
+								if($this->exists($asin)){
+									if($this->priceHasChanged($asin, $precio)){
+										$this->updateAmazonPrice($asin, $precio);
+									}
+									
+								}else{
+									$this->insertProduct($producto, $precio, $asin, $link, $descripcion, $modelo, $fabricante);
+								}
+								
+									
+								
 							}
 						}
 					}
@@ -524,7 +535,7 @@
 			$total_secciones = 10;
 			$nodos = null;
 			$conjunto_paginas = 0;
-
+			$ultima = 0;
 			for($i=1; $i<=$total_secciones  ; $i++){
 				$nombre_seccion = "seccion_".$i;
 				$sentencia->bindValue(":seccion", $nombre_seccion);
@@ -547,12 +558,15 @@
 					$sentencia->bindValue(":conjunto", 0);
 					$sentencia->bindValue(":nodos", "");
 					$sentencia->execute();
+					$ultima = $i;
 					break;
 				}
 
 			}
-
-			$this->getProductosByNodos($nodos,$conjunto_paginas);
+			if($ultima != $total_secciones AND $conjunto_paginas!=2){
+				$this->getProductosByNodos($nodos,$conjunto_paginas);
+			}
+			
 		}
 				
 	}
