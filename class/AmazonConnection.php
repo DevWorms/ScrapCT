@@ -230,7 +230,11 @@
 			// tag de socio para comision por click
 			$params['AssociateTag'] = AmazonConnection::AWS_ASSOCIATE_TAG;
 			//Queremos solo electronicos
-			$params['SearchIndex'] = "Electronics";
+			//para otras peticiones si se pasa el id o ASIN no es requerido el indice de electronicos
+			if(!isset($params['ItemId'])){
+				$params['SearchIndex'] = "Electronics";
+			}
+						
 			//ordenamos los parametros
 			ksort($params);
 			$url_query = array();
@@ -598,8 +602,54 @@
 			// si NO es la ultima seccion en su ultimo conjunto ejecutamos el proceso de carga de producto
 			if($ultima != $total_secciones AND $conjunto_paginas!=2){
 				$this->getProductosByNodos($nodos,$conjunto_paginas);
-			}
+			}	
+		}
+
+		/**
+		 * Obtiene el precion de un producto especifico pro ASIN
+		 * @param  [String] $asin [asin del producto]
+		 * @return [int]       $precio
+		 */
+		public function getPriceAmazonApi($asin){
+			$amazon = $this;
+			$precio = null;
+			// realizamos la peticion esta vez por ASIN y obtenemos
+			// la informacion de las ofertas (precios)
+			$parametros = array('Operation' => 'ItemLookup',
+								'ItemId' => $asin,
+								'MechantId' => 'All',
+    							'Condition' => 'All',
+    							'ResponseGroup' => 'OfferFull');
+
+
+
+			$peticion = $amazon->construirPeticion("com.mx",$parametros);
+
+			$xmlContent = @file_get_contents($peticion);
 			
+			if($xmlContent === FALSE){
+				$precion = null;
+			}else{
+				$pxml = simplexml_load_string($xmlContent);
+			}
+			// obtenemos el item
+			$item = $pxml->Items->Item;
+			// si el precio mas bajo no esta
+			if(isset($item->OfferSummary->LowestNewPrice->Amount)){
+				$division = ($item->OfferSummary->LowestNewPrice->Amount) / 100;
+				$precio = floor($division);
+				//si no ontenemos e precio de lista
+			}else if(isset($item->Offers->Offer->OfferListing->Price->Amount)){
+				// para los dos casos usamos el precio sin formato
+				// pero lo dividmos entre 100 ya que todos los precion traen dos decimales
+				// sin importar que sea 00 y el api lo devuelve sin punto es decir 100 veces mas grande
+				$division = ($item->Offers->Offer->OfferListing->Price->Amount) / 100;
+				$precio = floor($division);
+			}else{
+				$precio ="Sin precion obtenido";
+			}			
+			// regresamso el precio
+			return $precio;
 		}
 				
 	}
@@ -608,6 +658,6 @@
 	//ejecutar a una hora cronjob
 	//$amazon->seccionarNodos();
 	// ejecutar 20 veces, 1 vez cada 3 minuos cronjobs
-	$amazon->cargarProductos();
-	
+	//$amazon->cargarProductos();
+	echo $amazon->getPriceAmazonApi('B01J5RHBQ4');	
 ?>
