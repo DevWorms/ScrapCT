@@ -469,16 +469,23 @@
 			foreach ($nodos_seccionados as $key => $value) {
 				$str_nodos = implode(",", $value);
 				$sentencia->bindValue(":nodos", $str_nodos);
-				$sentencia->bindValue(":conjunto_paginas", 0fi);
+				$sentencia->bindValue(":conjunto_paginas", 0);
 				$sentencia->bindValue(":seccion", $key);
 				$sentencia->execute();
 			}
 		}
 
+		/**
+		 * Obtiene los productos de amazon de una seccion de nodos y conjunto de paginas dada
+		 * y los inserta en la base de datos
+		 * @param  [array] $nodos            [arreglo de nodos]
+		 * @param  [int] $conjunto_paginas [conjumto 1 (1-5) , conjunto 2 (6-10)]
+		 * @return [type]                   [description]
+		 */
 		private function getProductosByNodos($nodos,$conjunto_paginas){
 			$pag_ini= 0;
 			$pag_fin = 0;
-
+			// obtenemos el invervalo de pagians segun el conjunto dado
 			if($conjunto_paginas == 1){
 				$pag_ini = 1;
 				$pag_fin = 5;
@@ -486,40 +493,49 @@
 				$pag_ini = 6;
 				$pag_fin = 10;
 			}
-
+			// iteramos los nodos dados
 			foreach ($nodos as  $nodo) {
+				// reccoremos el invervalo de pagias
 				for ($pag=$pag_ini; $pag <=$pag_fin ; $pag++) { 
+					//obtenemos los productos del nodo y pagina corrientes
 					$response = $this->itemSearch($nodo, $pag);
 					$response = $response['resultado'];
+					// si la peticion tuvo resultadi
 					if($response != null){
+						// si contiene items (productos)
 						if(isset($response->Item)){
 							$items = $response->Item;
+							// iteramso cada producto
 							foreach ($items as $item) {
+								// el nombre es el atrivuto title
 								$producto = $item->ItemAttributes->Title;
+								// si el precio nuevo desde existe
 								if(isset($item->OfferSummary->LowestNewPrice->Amount)){
 									$precio = ($item->OfferSummary->LowestNewPrice->Amount / 100);
 									$precio= floor($precio);
 								}else if(isset($item->ItemAttributes->ListPrice->Amount)){
+									// si el no esta el precio mas bajo, entonces usamos el precio de lista
 									$precio = ($item->ItemAttributes->ListPrice->Amount / 100);
 									$precio= floor($precio);
 								}
+								//obtenemos los demas valores de manera directa
 								$asin= $item->ASIN;
 								$link = $item->DetailPageURL;
 								$descripcion = $item->ItemAttributes->Feature;
 								$modelo = $item->ItemAttributes->Model;
 								$fabricante = $item->ItemAttributes->Manufacturer;
-								
+								//si ya existe el producto en la base
+								//vemos si su precio cambio y solo actualziamos esto
 								if($this->exists($asin)){
 									if($this->priceHasChanged($asin, $precio)){
 										$this->updateAmazonPrice($asin, $precio);
 									}
 									
 								}else{
+									// si no existe es un producto nuevo y se isnerta con toda su informacion
 									$this->insertProduct($producto, $precio, $asin, $link, $descripcion, $modelo, $fabricante);
 								}
-								
 									
-								
 							}
 						}
 					}
@@ -528,7 +544,14 @@
 			}
 		}
 
+		/**
+		 * Obtiene la seccion de nodos y conjunto de paginas de los cuales se obtendran 
+		 * y cargaran los productos , es el proceso principa que se encarga de ejecutar
+		 * las demas partes
+		 * @return None
+		 */
 		public function cargarProductos(){
+			// obtenemos los nodos de las secciones
 			$query = "SELECT * FROM dw_secciones_nodos WHERE seccion = :seccion ";
 			$sentencia = $this->db->prepare($query);
 			$nombre_seccion = "";
@@ -536,14 +559,20 @@
 			$nodos = null;
 			$conjunto_paginas = 0;
 			$ultima = 0;
+			// itenramos por seccion
 			for($i=1; $i<=$total_secciones  ; $i++){
 				$nombre_seccion = "seccion_".$i;
 				$sentencia->bindValue(":seccion", $nombre_seccion);
 				$sentencia->execute();
 				$datos = $sentencia->fetchAll();
+				// si la seccion corriente no tiene conjunto de pagians recorrido
+				// o le falta el conjunto 2 (solo dos conjuntos 1 y 2)
 				if($datos[0]["conjunto_paginas"] == 0 || $datos[0]["conjunto_paginas"] == 1){
+					// le sumamos 1 al conjunt corriente
 					$conjunto_paginas = $datos[0]["conjunto_paginas"] + 1;
+					//obtenemos los nodos de esta seccion
 					$nodos = explode(",", $datos[0]["nodos"]);
+					//actualizamso los datos de conjunto de pagas que se recorreran
 					$queryPaginas = "UPDATE dw_secciones_nodos SET conjunto_paginas = :conjunto WHERE seccion = :seccion";
 					$sentencia = $this->db->prepare($queryPaginas);
 					$sentencia->bindValue(":seccion", $nombre_seccion);
@@ -552,7 +581,10 @@
 
 					break;
 				}
+				// si llego hasta la seccion 10 la ultima, ha terminado todas las secciones
+				// en sus dos conjuntos de paginas
 				if($i == $total_secciones){
+					// refrescamos la tabla para los procesos del dia siguiente
 					$refreshQuery = "UPDATE dw_secciones_nodos SET conjunto_paginas = :conjunto , nodos = :nodos";
 					$sentencia = $this->db->prepare($refreshQuery);
 					$sentencia->bindValue(":conjunto", 0);
@@ -563,6 +595,7 @@
 				}
 
 			}
+			// si NO es la ultima seccion en su ultimo conjunto ejecutamos el proceso de carga de producto
 			if($ultima != $total_secciones AND $conjunto_paginas!=2){
 				$this->getProductosByNodos($nodos,$conjunto_paginas);
 			}
