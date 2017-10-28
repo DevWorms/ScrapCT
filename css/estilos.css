@@ -1,3 +1,14 @@
+*{
+	padding: 0;
+	margin: 0;
+}
+
+html,body,.main-container {
+    height:100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 .card{
 	box-shadow: 5px 5px 2px #0068b9;
 	border-radius: 2%;
@@ -13,10 +24,15 @@
 	background-color: #0068b9;
 }
 
+.colorSecundario{
+	background-color:rgb(0,147,255);
+}
+
 header{
 	width: 100%;
 	padding: 2.5%;
 	text-align: center;
+	box-shadow: 1px 1px 5px black;
 }
 
 .titulos{
@@ -32,3 +48,39 @@ footer{
 	padding: 2.5%
 }
 
+.menu{
+	background-color: rgb(0,147,255);
+    float: none;
+    display: table-cell;
+    box-shadow: 1px 1px 5px black;
+}
+.menu ul{
+	list-style: none;
+	width: 100%;
+	padding: 1.5%;
+}
+.menu ul li a{
+	font-weight: bold;
+	width: 90%;
+	color: white;
+	float: left;
+	margin-bottom: 5%;
+	padding: 2%;
+}
+
+header{
+	width: 100%;
+	padding: 1%;
+	color: white;
+}
+
+.body {
+    display: flex;
+    height: 100%;
+}
+
+.box-container{
+    float: none;
+    display: table-cell;
+	padding: 5%;
+}

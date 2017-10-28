@@ -44,12 +44,22 @@
 	        	$respuesta['estado'] = 1;
             	$respuesta['mensaje'] = "Bienvenido " . $resultado['usuario'] . " " . $resultado['apellido'] ;
 	        }else{
+	        	//session_destroy();
 	        	//si no existe
 	        	$respuesta['estado'] = 0;
             	$respuesta['mensaje'] = "Usuario o contraseña incorrecta ";
 	        }
 	        //devolvemos una respuesta json
 	        return json_encode($respuesta);
+		}
+
+		public function cerrarSesion(){
+			if (session_status() == PHP_SESSION_NONE) {
+        		session_start();
+		    }
+			session_destroy();
+
+			header("Location: " . '../');
 		}
 
 
@@ -66,7 +76,9 @@
 			case 'login':
 				echo  $usuario->inicarSesion($_POST['correo'], $_POST['contrasena']);
 				break;
-			
+			case 'logout':
+				echo  $usuario->cerrarSesion();
+				break;
 			default:
 				header("Location: 404.php");
 				break;

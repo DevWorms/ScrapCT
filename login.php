@@ -7,8 +7,7 @@
 		<title>ScrapCT</title>
 	</head>
 	<body>
-		<header class="titulos">
-			
+		<header class="titulos" style="color: black;box-shadow: none;">
 			<h1>Administrador - Web scraping</h1>
 		</header>
 		<br><br>
@@ -35,9 +34,10 @@
 				</form>
 			</div>
 		</div>
+		<br>
 		<footer class="cuerpo">
 			<img src="img/logo-teCheck-home.png">
-			<br>
+			<br><br>
 			Copyright 2017 |  Todos los derechos reservados  |  Aviso Legal
 
 		</footer>

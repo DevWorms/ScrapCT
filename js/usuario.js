@@ -18,11 +18,15 @@ function login(){
             $("#confirmacion").html("<p>Iniciando sesion</p>");
         },
 		success:function(response){
-			var contenido = "<p>" + response.mensaje+ "</p>";
-			$("#confirmacion").html(contenido);
-
 			if(response.estado == 1){
-				//redireccion
+				var contenido = "<p style='color:blue'><br>" + response.mensaje+ "<br> Iniciando ... </p>";
+				$("#confirmacion").html(contenido);
+				setTimeout(function(){
+					window.location.replace("tiendas");
+				},2000);
+			}else{
+				var contenido = "<p style='color:red'><br>" + response.mensaje+ "*** </p>";
+				$("#confirmacion").html(contenido);
 			}
 		},
 		error:function(erro) {
