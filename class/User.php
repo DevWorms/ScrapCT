@@ -53,6 +53,10 @@
 	        return json_encode($respuesta);
 		}
 
+		/**
+		 * cerrar session
+		 * @return none
+		 */
 		public function cerrarSesion(){
 			if (session_status() == PHP_SESSION_NONE) {
         		session_start();
@@ -60,6 +64,33 @@
 			session_destroy();
 
 			header("Location: " . '../');
+		}
+
+		public function getUsuarios(){
+			$respuesta = ['estado' => 0,'mensaje' => '' ];
+			try {
+				$query = "SELECT usuario,apellido,correo from dw_usuarios";
+				$sentencia = $this->pdo->prepare($query);
+		        $sentencia->execute();
+		        $resultado = $sentencia->fetchAll();
+		        $respuesta['usuarios'] = $resultado;
+		        $respuesta['estado'] = 1;
+				$respuesta['mensaje'] = 'Usuarios encontrados';
+			} catch (Exception $e) {
+				$respuesta['estado'] = 0;
+				$respuesta['mensaje'] = $e->getMessage();
+
+			}
+
+			return json_encode($respuesta);
+		}
+
+		public function createUsuario(){
+
+		}
+
+		public function deleteUsuario($id){
+
 		}
 
 

@@ -17,10 +17,14 @@
 		<?php 
 			include 'menu.php';
 		?>
-
 		<div class="col-md-9" class="box-container">
-			
+			<?php include 'footer.php'; ?>
 		</div>
 	</div>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("a[href=tiendas]").addClass("menu-activo");
+		});
+	</script>
 </body>
 </html>

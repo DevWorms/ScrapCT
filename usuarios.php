@@ -61,7 +61,16 @@
 					</tr>
 				</thead>
 			</table>
+			<?php include 'footer.php' ?>
 		</div>
+		
 	</div>
+	
+	<script type="text/javascript" src="js/usuario.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("a[href=usuarios]").addClass("menu-activo");
+		});
+	</script>
 </body>
 </html>
