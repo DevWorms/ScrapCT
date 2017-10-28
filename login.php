@@ -36,6 +36,6 @@
 		</div>
 		<br>
 		<?php include 'footer.php' ?>
-	    <script type="text/javascript" src="js/usuario.js"></script>
+	    <script type="text/javascript" src="js/login.js"></script>
 	</body>
 </html>

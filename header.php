@@ -32,7 +32,10 @@
 							</form>
 						</div>
 						<div class="col-md-8" align="left" class="cuerpo">
-							<?php echo $_SESSION['usuario'] ."<br>". $_SESSION['correo']; ?>
+							<?php 
+								echo $_SESSION['usuario'];
+								echo "<p style='font-size:70%;font-weight:bold'>". $_SESSION['correo'] . "</p>";
+							?>
 						</div>
 					</div>
 

@@ -88,3 +88,21 @@ header{
 .menu-activo{
 	background-color: #0068b9;
 }
+
+#progressbar{
+	width: 50%;
+	background-color: #ccc;
+	margin: 20% auto;
+	z-index: 2000;
+}
+
+#wait{
+	background-color: rgba(0,0,0,0.3);
+	display: none;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	z-index: 1000;
+	top:0;
+	left: 0;
+}

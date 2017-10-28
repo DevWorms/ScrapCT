@@ -20,7 +20,8 @@
 
 		<div class="col-md-9 box-container">
 			<h3>Usuarios<br><br></h3>
-			<form>
+			<form id="form-crearUsuario">
+				<input type="hidden" name="post" id="post" value="crearUsuario">
 				<div class="row">
 					<div class="col-md-4" align="left">
 						<label for="nombre">
@@ -46,12 +47,12 @@
 					</div>
 				</div>
 				<br>
-				<button class="btn btn-primary" type="button">
+				<button class="btn btn-primary" type="button" onclick="crearUsuario()">
 					Guardar
 				</button>	
 			</form>
 			<br>
-			<table class="table">
+			<table class="table table-striped table-condensed" id="tbl-usuarios">
 				<thead>
 					<tr>
 						<th>Nombre</th>
@@ -60,6 +61,7 @@
 						<th>&nbsp;</th>
 					</tr>
 				</thead>
+				<tbody></tbody>
 			</table>
 			<?php include 'footer.php' ?>
 		</div>
