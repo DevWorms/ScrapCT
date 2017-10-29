@@ -37,7 +37,7 @@
 						</li>
 						<li style="display: none" id="tercero_amazon">
 							<button class="btn btn-success" onclick="ejecutarProceso();">
-								Ejecutar proces Amazon
+								Ejecutar proceso Amazon
 							</button>
 							<br><br>
 						</li>
@@ -52,7 +52,13 @@
 			</div>
 			<?php include 'footer.php' ?>
 		</div>
-		
+		<div id="modal-avisoAmazon" title="x" style="overflow-x:hidden;display: none" align="left">
+			<h3 style="color: red">
+				<b>Atención ! </b>
+				<img src="img/warning.png">
+			</h3 style="color: black">
+			<h4>Antes y durante el proceso es importante no apagar el equipo, seguir los pasos, y verificar que se tienen una buena conexión a internet.</h4>
+		</div>
 	</div>
 	
 	<script type="text/javascript" src="js/amazon.js"></script>

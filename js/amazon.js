@@ -9,9 +9,33 @@ function printConsola(texto){
 }
 
 function iniciarProceso(){
-	printConsola("Proceso inicializado, oprima obtener categorias ...");
+	printConsola("Proceso inicializado, <span style='color:blue'>oprima obtener categorias ...</span>");
 	$("#segundo_amazon").slideDown(1000);
 	$("#primer_amazon button").attr('disabled', 'true');
+	 var tamano = 50 / 100;
+    //inicializamos el dialog
+    $( "#modal-avisoAmazon").dialog({
+        autoOpen: false,
+            show: {
+                  effect: "clip",
+                  duration: 500
+                },
+            hide: {
+                  effect: "drop",
+                  duration: 500
+                },
+             position: { 
+                  my: "center", 
+                  at: "center", 
+                  of: window 
+            },
+        width: screen.width * tamano,
+        resizable:false,
+        title:"Aviso amazon"
+    });
+
+    $( "#modal-avisoAmazon").dialog('open');
+
 }
 
 function obtenerCategorias(){
