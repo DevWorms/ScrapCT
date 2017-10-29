@@ -27,7 +27,8 @@
 							<b>Nombre de la Tienda</b>
 							<input type="text" id="nombre" name="nombre" class="form-control">
 						</label>
-						<br>
+					</div>
+					<div class="col-md-4" align="left">
 						<label for="apellido">
 							<b>URL</b>
 							<input type="text" id="url" name="url" class="form-control">

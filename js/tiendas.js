@@ -21,7 +21,9 @@ function getTiendas(){
                 for (var i = tiendas.length - 1; i >= 0; i--) {
                 	filas += "<tr>";
                 	filas += "<td>" + tiendas[i].tienda + "</td>";
-                	filas += "<td>" + tiendas[i].url + "</td>";
+                	filas += "<td>";
+                	filas += "<a href='" + tiendas[i].url + "' target='_blank'>" + tiendas[i].url + "</a>";
+                	filas += "</td>";
                 	filas += "<td>" + tiendas[i].clase + "</td>";
                 	filas += "<td><a href='#' onclick='deleteTienda("+tiendas[i].id+")'>Eliminar</td>";
                 	filas += "<td><a href='#' onclick='updateTienda("+tiendas[i].id+")'>Modificar</td>";
