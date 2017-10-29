@@ -52,17 +52,20 @@
 				</button>	
 			</form>
 			<br>
-			<table class="table table-striped table-condensed" id="tbl-usuarios">
-				<thead>
-					<tr>
-						<th>Nombre</th>
-						<th>Apellido</th>
-						<th>Correo</th>
-						<th>&nbsp;</th>
-					</tr>
-				</thead>
-				<tbody></tbody>
-			</table>
+			<div class="resultados">
+				<table class="table table-striped table-condensed" id="tbl-usuarios">
+					<thead>
+						<tr>
+							<th>Nombre</th>
+							<th>Apellido</th>
+							<th>Correo</th>
+							<th>&nbsp;</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+			
 			<?php include 'footer.php' ?>
 		</div>
 		

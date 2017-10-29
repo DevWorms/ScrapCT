@@ -106,3 +106,8 @@ header{
 	top:0;
 	left: 0;
 }
+
+.resultados{
+	height:  250px;
+	overflow-y: scroll;
+}
