@@ -1,5 +1,9 @@
 $(document).ready(function() {
 	getUsuarios();
+    $("#form-crearUsuario").submit(function(event) {
+        event.preventDefault();
+        crearUsuario();
+    });
 });
 
 /**

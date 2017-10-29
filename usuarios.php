@@ -1,13 +1,5 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>Tec-Check Web scraping</title>
-	<meta charset="UTF-8"/>
-	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-	<link href="https://fonts.googleapis.com/css?family=Bree+Serif|Work+Sans" rel="stylesheet"> 
-	<link rel="stylesheet" type="text/css" href="css/estilos.css">
-	<title>Tec-Check</title>
-</head>
 <body>
 	<?php 
 		include 'header.php';
@@ -26,28 +18,28 @@
 					<div class="col-md-4" align="left">
 						<label for="nombre">
 							<b>Nombre de Usuario</b>
-							<input type="text" id="nombre" name="nombre" class="form-control">
+							<input type="text" id="nombre" name="nombre" class="form-control" required>
 						</label>
 						<br>
 						<label for="apellido">
 							<b>Apellido</b>
-							<input type="text" id="apellido" name="apellido" class="form-control">
+							<input type="text" id="apellido" name="apellido" class="form-control" required>
 						</label>
 					</div>
 					<div class="col-md-4" align="left">
 						<label for="correo">
 							<b>Correo electrónico</b>
-							<input type="email" id="correo" name="correo" class="form-control">
+							<input type="email" id="correo" name="correo" class="form-control" required>
 						</label>
 						<br>
 						<label for="correo">
 							<b>Contrase&ntilde;a</b>
-							<input type="password" id="contrasena" name="contrasena" class="form-control">
+							<input type="password" id="contrasena" name="contrasena" class="form-control" required>
 						</label>
 					</div>
 				</div>
 				<br>
-				<button class="btn btn-primary" type="button" onclick="crearUsuario()">
+				<button class="btn btn-primary" type="submit">
 					Guardar
 				</button>	
 			</form>
