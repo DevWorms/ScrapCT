@@ -1,5 +1,13 @@
 <!DOCTYPE html>
 <html>
+<head>
+	<meta charset="UTF-8"/>
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	<link href="https://fonts.googleapis.com/css?family=Bree+Serif|Work+Sans" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="css/estilos.css">
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/start/jquery-ui.css">
+	<title>Teccheck</title>
+</head>
 <body>
 	<?php 
 		include 'header.php';
@@ -9,7 +17,7 @@
 		<?php 
 			include 'menu.php';
 		?>
-		<div class="col-md-9 box-container">
+		<div class="col-md-9 box-container cuerpo">
 			<h3>Tiendas<br><br></h3>
 			<form id="form-crearTienda">
 				<input type="hidden" name="post" id="post" value="crearTienda">

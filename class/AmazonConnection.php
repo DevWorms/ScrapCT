@@ -289,6 +289,7 @@
 
 			$response= ['estado' => 0,'mensaje' => '' , 'resultado' => null];
 			//parseamos el contenido a un string
+			echo "<br> consola > <b>Obteniendo las categorias para el nodo : " . $browseNodeId . "</b>";
 			$xmlContent = @file_get_contents($peticion);
 			
 			if($xmlContent === FALSE){
@@ -296,6 +297,7 @@
 				$response['estado'] = 0;
 				$response['mensaje'] = 'No se pudo obtener respuesta a esta peticion';
 				$response['resultado'] = null;
+				echo "<br> consola > <span style='color:red'>Las Categorias para el nodo: " . $browseNodeId . " no puedieron ser resueltas</span>";
 				return $response;
 			}
 
@@ -305,7 +307,7 @@
 			$response['estado'] = 1;
 			$response['mensaje'] = 'Peticion exitosa';
 			$response['resultado'] = $pxml->BrowseNodes;
-
+			echo "<br> consola > <span style='color:green'>Categorias para el nodo: " . $browseNodeId . " obtenidas</span>";
 			return $response;
 		}
 
@@ -315,6 +317,7 @@
 		 * @return [array]          [Todos los nodos]
 		 */
 		private function getAllNodes($semilla){
+			echo "<br> consola > <b>Semilla inicial de nodos Electronicos y Videjojuegos ...</b>";
 			try{
 				//PADRES
 				foreach ($semilla as  $nodo) {
@@ -345,7 +348,7 @@
 				// FIN PADRES
 
 			} catch (Exception $e) {
-
+				echo "<br> consola > <span style='color:red'>Exception : ".$e->getMessage() ."</span>";
 				return json_encode(array("status" => 0, "message" => $e->getMessage()));
 			}
 
@@ -402,6 +405,7 @@
 			$cantidad_nodos_seccion = array();
 			// obtengo los nodos(categorias) de amazon
 			$nodos = $this->getAllNodes($this->nodosBase);
+			echo "<br> consola > <b>Categorias obtenidas</b>";
 			// elimino nodos duplicados
 			$nodos = array_unique($nodos);
 			//obtengo la cantidad total de nodos unicos
@@ -412,16 +416,18 @@
 			$nodos_sobrantes = 0;
 			// deivison de nodos que tencan a cada seccion sin contar sobrantes
 			$division = 0;
-			// si se obtuvieron mas de 20
+			echo "<br> consola > <b>Calculando secciones ...</b>";
+			// si se obtuvieron mas de 10
 			if($total_nodos > $total_secciones){
-				// el total de nodos entre las 20 secciones
+				// el total de nodos entre las 10 secciones
 				$division = $total_nodos / $total_secciones;
 				// le quitamos lso decinales a la division y estos son los nodos minimos que tendra cada seccion
 				$nodos_seccion = floor($division);
-				// los nodos minimos por seccion obtenidos arroba * 20 nos dara menos del total, esta multiplicacion se la restamos al total y seran los nodos sobrantes
+				// los nodos minimos por seccion obtenidos arroba * 10 nos dara menos del total, esta multiplicacion se la restamos al total y seran los nodos sobrantes
 				$nodos_sobrantes = $total_nodos - ($nodos_seccion * $total_secciones);
-				//recorremos 20 secciones
+				//recorremos 10 secciones
 				for($cont = 1; $cont<=$total_secciones ;$cont++){
+					echo "<br> consola > <b>Determinando las cantidad de categorias por seccion ...</b>";
 					// si hay nodos sobrantes
 					if($nodos_sobrantes > 0){
 						// distribumos de a un nodo sobrante entre las secciones
@@ -438,6 +444,7 @@
 				// los nodos por seccion son 1
 				$nodos_seccion = 1;
 				for($cont = 1; $cont<=$total_secciones ;$cont++){
+					echo "<br> consola > <b>CAsignando las categorias a cada seccion ...</b>";
 					// se distribuye de auno a las secciones y guardamos en el arreglo
 					$cantidad_nodos_seccion["seccion_" . $cont] =  $nodos_seccion;
 				}
@@ -468,6 +475,7 @@
 				$nodos_seccionados[$seccion] = $nodos_save;
 			}
 			// cargamos a la base de datos los nodos por seccion
+			echo "<br> consola > <b>Almacenando las secciones de categorias en la base de datos...</b>";
 			$query = "UPDATE dw_secciones_nodos SET nodos = :nodos,conjunto_paginas= :conjunto_paginas WHERE seccion = :seccion";
 			$sentencia = $this->db->prepare($query);
 			foreach ($nodos_seccionados as $key => $value) {
@@ -477,6 +485,8 @@
 				$sentencia->bindValue(":seccion", $key);
 				$sentencia->execute();
 			}
+
+			echo "<br> consola > <b>Completado, <span style='color:blue'>Oprime Ejecutar proceso Amazon</span>...</b>";
 		}
 
 		/**
@@ -556,6 +566,7 @@
 		 */
 		public function cargarProductos(){
 			// obtenemos los nodos de las secciones
+			echo "<br> consola > <span style='color:blue'>Obteniendo las categorias de la base de datos ...</span>";
 			$query = "SELECT * FROM dw_secciones_nodos WHERE seccion = :seccion ";
 			$sentencia = $this->db->prepare($query);
 			$nombre_seccion = "";
@@ -572,11 +583,13 @@
 				// si la seccion corriente no tiene conjunto de pagians recorrido
 				// o le falta el conjunto 2 (solo dos conjuntos 1 y 2)
 				if($datos[0]["conjunto_paginas"] == 0 || $datos[0]["conjunto_paginas"] == 1){
+					echo "<br> consola > <span style='color:blue'>Obteniendo las categorias de la $nombre_seccion</span>";
 					// le sumamos 1 al conjunt corriente
 					$conjunto_paginas = $datos[0]["conjunto_paginas"] + 1;
 					//obtenemos los nodos de esta seccion
 					$nodos = explode(",", $datos[0]["nodos"]);
 					//actualizamso los datos de conjunto de pagas que se recorreran
+					echo "<br> consola > <span style='color:green'>Actualizando el conjunto de paginas</span>";
 					$queryPaginas = "UPDATE dw_secciones_nodos SET conjunto_paginas = :conjunto WHERE seccion = :seccion";
 					$sentencia = $this->db->prepare($queryPaginas);
 					$sentencia->bindValue(":seccion", $nombre_seccion);
@@ -595,6 +608,7 @@
 					$sentencia->bindValue(":nodos", "");
 					$sentencia->execute();
 					$ultima = $i;
+					echo "<br> consola > <span style='color:blue'>Limpiando la tabla de las secciones</span>";
 					break;
 				}
 
@@ -603,6 +617,8 @@
 			if($ultima != $total_secciones AND $conjunto_paginas!=2){
 				$this->getProductosByNodos($nodos,$conjunto_paginas);
 			}	
+
+			echo "<br> consola > <span style='color:blue'>Proceso completo</span>";
 		}
 
 		/**
@@ -654,10 +670,21 @@
 				
 	}
 
-	$amazon = new AmazonConnection();
-	//ejecutar a una hora cronjob
-	//$amazon->seccionarNodos();
-	// ejecutar 20 veces, 1 vez cada 3 minuos cronjobs
-	//$amazon->cargarProductos();
-	echo $amazon->getPriceAmazonApi('B01J5RHBQ4');	
+	if(isset($_POST['post'])){
+		$post= $_POST['post'];
+		$amazon = new AmazonConnection();
+		switch ($post) {
+			case 'obtenerCategorias':
+				$amazon->seccionarNodos();
+				break;
+			case 'cargarProductos':
+				$amazon->cargarProductos();
+				break;
+			default:
+				header("Location: 404.php");
+			break;
+		}
+	}
+	
+
 ?>

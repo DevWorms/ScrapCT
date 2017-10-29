@@ -10,14 +10,6 @@
 		header('Location: error');
 	}
  ?>
-<head>
-	<meta charset="UTF-8"/>
-	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-	<link href="https://fonts.googleapis.com/css?family=Bree+Serif|Work+Sans" rel="stylesheet">
-	<link rel="stylesheet" type="text/css" href="css/estilos.css">
-	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/start/jquery-ui.css">
-	<title>Teccheck</title>
-</head>
 <div class="row">
 	<div class="col-md-12 colorPrimario">
 		<header>

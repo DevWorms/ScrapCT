@@ -111,3 +111,11 @@ header{
 	height:  250px;
 	overflow-y: scroll;
 }
+
+.consola{
+	background-color: white;
+	box-shadow: 5px 5px 2px #0068b9;
+	font-weight: bold;
+	height: 225px;
+	overflow-y: scroll;
+}
