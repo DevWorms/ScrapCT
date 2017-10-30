@@ -1,6 +1,6 @@
 <?php
 		require_once __DIR__ . '/../app/DB.php';
-		error_reporting(E_ALL);
+		error_reporting(0);
 	/**
 	* Clase para la conexion con el api de Amazon
 	*/
@@ -122,7 +122,7 @@
 		 * @param string $fabricante
 		 * @return array
 		 */
-		public function insertProduct($producto, $precio, $asin, $link, $descripcion = '', $modelo = '', $fabricante = '') {
+		public function insertProduct($producto, $precio, $asin, $link, $descripcion = '', $modelo = '', $fabricante = '', $img_url,$datos) {
 				try {
 						$slug = $this->slugify($producto);
 						$guid = "http://www.tec-check.com.mx/reviews/" . $slug;
@@ -165,6 +165,21 @@
 						$pdo6->bindValue(":price", $precio, PDO::PARAM_STR);
 						$pdo6->bindValue(":post_id", $post_id, PDO::PARAM_INT);
 						$pdo6->execute();
+
+						$query_metadata = "INSERT INTO wp_pwgb_postmeta (meta_value, meta_key, post_id) VALUES (:img_url, 'picture', :post_id);";
+
+						$pdo7 = $this->db->prepare($query_metadata);
+						$pdo7->bindValue(":img_url", $img_url, PDO::PARAM_STR);
+						$pdo7->bindValue(":post_id", $post_id, PDO::PARAM_INT);
+						$pdo7->execute();
+
+						$query_metadata = "INSERT INTO wp_pwgb_postmeta (meta_value, meta_key, post_id) VALUES (:datos, 'esp_tecnica', :post_id);";
+
+						$pdo8 = $this->db->prepare($query_metadata);
+						$pdo8->bindValue(":datos", $datos, PDO::PARAM_STR);
+						$pdo8->bindValue(":post_id", $post_id, PDO::PARAM_INT);
+						$pdo8->execute();
+
 				} catch (Exception $e) {
 						echo json_encode(["status" => 0, "message" => $e->getMessage()])."<br>";
 				}
@@ -542,6 +557,24 @@
 								$descripcion = $item->ItemAttributes->Feature;
 								$modelo = $item->ItemAttributes->Model;
 								$fabricante = $item->ItemAttributes->Manufacturer;
+								$img_url = $item->LargeImage->URL;
+								//especificaciones tecnicas
+								$atributos =(array) $item->ItemAttributes;
+								// todo menos lo que ya se almaceno y datos
+								// inecesarios
+								unset($atributos['Binding']);
+								unset($atributos['CatalogNumberList']);
+								unset($atributos['EAN']);
+								unset($atributos['EANList']);
+								unset($atributos['Feature']);
+								unset($atributos['Manufacturer']);
+								unset($atributos['Model']);
+								unset($atributos['Title']);
+								unset($atributos['MPN']);
+								unset($atributos['UPC']);
+								unset($atributos['UPCList']);
+								$datos_tecnicos = json_encode($atributos);
+
 								//si ya existe el producto en la base
 								//vemos si su precio cambio y solo actualziamos esto
 								if($this->exists($asin)){
@@ -553,7 +586,7 @@
 								}else{
 									// si no existe es un producto nuevo y se isnerta con toda su informacion
 									$nuevos++;
-									$this->insertProduct($producto, $precio, $asin, $link, $descripcion, $modelo, $fabricante);
+									$this->insertProduct($producto, $precio, $asin, $link, $descripcion, $modelo, $fabricante, $img_url,$datos_tecnicos);
 								}
 									
 							}
@@ -566,6 +599,7 @@
 					}
 					
 				}
+				
 			}
 		}
 
@@ -689,7 +723,7 @@
 				
 	}
 
-	if(isset($_POST['post'])){
+	/*if(isset($_POST['post'])){
 		$post= $_POST['post'];
 		$amazon = new AmazonConnection();
 		switch ($post) {
@@ -706,7 +740,11 @@
 				header("Location: 404.php");
 			break;
 		}
-	}
+	}*/
+
+	$amazon = new AmazonConnection();
+	//$amazon->seccionarNodos();
+	$amazon->cargarProductos();
 	
 
 ?>
