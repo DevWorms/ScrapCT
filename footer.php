@@ -7,7 +7,7 @@
 <div  id="wait">
      <div id="progressbar"></div>
 </div>
-<br><br><br>
+<br><br>
 <footer class="cuerpo">
 	<img src="img/logo-teCheck-home.png">
 	<br><br>

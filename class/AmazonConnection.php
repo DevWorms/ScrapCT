@@ -497,6 +497,7 @@
 		 * @return [type]                   [description]
 		 */
 		private function getProductosByNodos($nodos,$conjunto_paginas){
+			echo "<br> consola > Calculando el intervalo de paginas";
 			$pag_ini= 0;
 			$pag_fin = 0;
 			// obtenemos el invervalo de pagians segun el conjunto dado
@@ -512,6 +513,7 @@
 				// reccoremos el invervalo de pagias
 				for ($pag=$pag_ini; $pag <=$pag_fin ; $pag++) { 
 					//obtenemos los productos del nodo y pagina corrientes
+					echo "<br> consola > <span style='color:blue'>Obteniendo productos del de la pagina $pag para el nodo $nodo...</span>";
 					$response = $this->itemSearch($nodo, $pag);
 					$response = $response['resultado'];
 					// si la peticion tuvo resultadi
@@ -520,6 +522,8 @@
 						if(isset($response->Item)){
 							$items = $response->Item;
 							// iteramso cada producto
+							$nuevos = 0;
+							$actualizados = 0;
 							foreach ($items as $item) {
 								// el nombre es el atrivuto title
 								$producto = $item->ItemAttributes->Title;
@@ -542,16 +546,23 @@
 								//vemos si su precio cambio y solo actualziamos esto
 								if($this->exists($asin)){
 									if($this->priceHasChanged($asin, $precio)){
+										$actualizados++;
 										$this->updateAmazonPrice($asin, $precio);
 									}
 									
 								}else{
 									// si no existe es un producto nuevo y se isnerta con toda su informacion
+									$nuevos++;
 									$this->insertProduct($producto, $precio, $asin, $link, $descripcion, $modelo, $fabricante);
 								}
 									
 							}
+							echo "<br> consola > <span style='color:green'> $nuevos productons nuevos y $actualizados productos cambiaron de precio para le nodo $nodo</span>";
+						}else{
+							echo "<br> consola > <span style='color:red'>No tenia items el nodo  $nodo...</span>";
 						}
+					}else{
+						echo "<br> consola > <span style='color:red'>No se pudieron obtener los productos para el $nodo...</span>";
 					}
 					
 				}
@@ -618,7 +629,6 @@
 				$this->getProductosByNodos($nodos,$conjunto_paginas);
 			}	
 
-			echo "<br> consola > <span style='color:blue'>Proceso completo</span>";
 		}
 
 		/**
@@ -667,6 +677,15 @@
 			// regresamso el precio
 			return $precio;
 		}
+
+		public function infoAmazon (){
+			$query = "SELECT COUNT(*) as cuantos FROM wp_pwgb_postmeta WHERE meta_key = :key";
+			$pdo = $this->db->prepare($query);
+			$pdo->bindValue(":key", 'asin');
+			$pdo->execute();
+			$result = $pdo->fetchAll();
+			return $result[0]['cuantos'];
+		}
 				
 	}
 
@@ -680,6 +699,9 @@
 			case 'cargarProductos':
 				$amazon->cargarProductos();
 				break;
+			case 'infoAmazon':
+				echo $amazon->infoAmazon();
+			break;
 			default:
 				header("Location: 404.php");
 			break;

@@ -119,3 +119,19 @@ header{
 	height: 225px;
 	overflow-y: scroll;
 }
+
+.bar_fondo{
+	background-color: #BDBDBD;
+	text-align: left;
+	border-radius: 20px;
+}
+
+.bar_liquid{
+	color: white;
+	font-weight: bold;
+	background-color: #5882FA;
+	border-radius: 20px;
+	height: 25px;
+	width: 0%;
+	text-align: center;
+}
