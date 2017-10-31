@@ -1,6 +1,6 @@
 <?php
 		require_once __DIR__ . '/../app/DB.php';
-		error_reporting(0);
+		error_reporting(E_ALL);
 	/**
 	* Clase para la conexion con el api de Amazon
 	*/
@@ -122,7 +122,7 @@
 		 * @param string $fabricante
 		 * @return array
 		 */
-		public function insertProduct($producto, $precio, $asin, $link, $descripcion = '', $modelo = '', $fabricante = '', $img_url,$datos) {
+		public function insertProduct($producto, $precio, $asin, $link, $descripcion = '', $modelo = '', $fabricante = '', $img_url,$datos,$nodo) {
 				try {
 						$slug = $this->slugify($producto);
 						$guid = "http://www.tec-check.com.mx/reviews/" . $slug;
@@ -179,6 +179,17 @@
 						$pdo8->bindValue(":datos", $datos, PDO::PARAM_STR);
 						$pdo8->bindValue(":post_id", $post_id, PDO::PARAM_INT);
 						$pdo8->execute();
+
+						// generamos relacion con categorias
+						$query_relate = "INSERT INTO wp_pwgb_term_relationships (object_id,term_taxonomy_id,term_order) VALUES (:object_id,:term_taxonomy_id,:term_order)";
+
+						$taxonomy_id= $this->getTaxonomiId($nodo);
+
+						$pdo9 = $this->db->prepare($query_relate);
+						$pdo9->bindValue(":object_id", $post_id);
+						$pdo9->bindValue(":term_taxonomy_id", $taxonomy_id);
+						$pdo9->bindValue(":term_order", 0);
+						$pdo9->execute();
 
 				} catch (Exception $e) {
 						echo json_encode(["status" => 0, "message" => $e->getMessage()])."<br>";
@@ -593,7 +604,7 @@
 								}else{
 									// si no existe es un producto nuevo y se isnerta con toda su informacion
 									$nuevos++;
-									$this->insertProduct($producto, $precio, $asin, $link, $descripcion, $modelo, $fabricante, $img_url,$datos_tecnicos);
+									$this->insertProduct($producto, $precio, $asin, $link, $descripcion, $modelo, $fabricante, $img_url,$datos_tecnicos,$nodo);
 								}
 									
 							}
@@ -760,10 +771,19 @@
 			$response = $pdo->fetchAll(PDO::FETCH_ASSOC);
 			return (count($response) > 0) ? true : false;
 		}
+
+		private function getTaxonomiId ($browseNodeId){
+			$query = "SELECT term_taxonomy_id  FROM wp_pwgb_terms AS term RIGHT JOIN wp_pwgb_term_taxonomy AS tax ON tax.term_id = term.term_id WHERE term.browse_node_amazon = :browseNode";
+			$pdo = $this->db->prepare($query);
+			$pdo->bindValue(":browseNode", $browseNodeId);
+			$pdo->execute();
+			$response = $pdo->fetchAll(PDO::FETCH_ASSOC);
+			return $response[0]['term_taxonomy_id'];
+		}
 				
 	}
 
-	/*if(isset($_POST['post'])){
+	if(isset($_POST['post'])){
 		$post= $_POST['post'];
 		$amazon = new AmazonConnection();
 		switch ($post) {
@@ -780,11 +800,6 @@
 				header("Location: 404.php");
 			break;
 		}
-	}*/
-
-	$amazon = new AmazonConnection();
-	//$amazon->seccionarNodos();
-	echo $amazon->getAllNodes($amazon->nodosBase);
-	
+	}
 
 ?>
