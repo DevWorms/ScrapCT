@@ -35,8 +35,130 @@ class Search
      * @param $model
      * @param $company
      */
-    public function init($name, $model, $company) {
+    public function init($name, $model, $post_id) {
+        foreach ($this->productsLink() as $shop) {
+            switch ($shop) {
+                case 'sanborns_pl':
+                    $result = $this->searchOnSanborns($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'linio_pl':
+                    $result = $this->searchOnLinio($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'claroshop_pl':
+                    $result = $this->searchOnClaroShop($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'coppel_pl':
+                    $result = $this->searchOnCoppel($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'sears_pl':
+                    $result = $this->searchOnSears($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                    /*
+                case 'sams_pl':
+                    $result = $this->searchOnSams($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                    */
+                case 'bestbuy_pl':
+                    $result = $this->searchOnBestBuy($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'walmart_pl':
+                    $result = $this->searchOnWalmart($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'liverpool_pl':
+                    $result = $this->searchOnLiverpool($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'office_max_pl':
+                    $result = $this->searchOnOfficeMax($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'office_depot_pl':
+                    $result = $this->searchOnOfficeDepot($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'palacio_pl':
+                    $result = $this->searchOnPalacio($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'soriana_pl':
+                    $result = $this->searchOnSoriana($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'elektra_pl':
+                    $result = $this->searchOnElektra($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'sony_pl':
+                    $result = $this->searchOnSony($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'costco_pl':
+                    $result = $this->searchOnCostco($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+                case 'radioshack_pl':
+                    $result = $this->searchOnRadioShack($name, $model);
+                    if ($result) {
+                        $this->saveProducto($shop, $post_id, $result['url']);
+                    }
+                    break;
+            }
+            echo strtolower($shop) . "<br>";
+        }
+    }
 
+    public function saveProducto($shop, $post_id, $url) {
+        try {
+            $query = "INSERT INTO wp_pwgb_postmeta (post_id, meta_key, meta_value) VALUES (:post_id, :shop, :url);";
+            $stm = $this->db->prepare($query);
+            $stm->bindValue(":post_id", $post_id, PDO::PARAM_INT);
+            $stm->bindValue(":shop", $shop, PDO::PARAM_STR);
+            $stm->bindValue(":url", $post_id, PDO::PARAM_STR);
+            $stm->execute();
+
+        } catch (Exception $ex) {
+            echo $ex->getMessage();
+        }
     }
 
     /**
@@ -648,6 +770,7 @@ class Search
 }
 
 $s = new Search();
+//$s->init("", "", "");
 //print_r($s->searchOnRadioShack("MICROCOMPONENTE LG CM2460", "LG CM2460"));
 //print_r($s->searchOnCyberPuerta("Monitor Gamer LG 24MP59G-P LED 23.8", "LG 24MP59G"));
 //print_r($s->searchOnWalmart("Barra de Sonido Curva Samsung 2.1 Canales HW-J6000R", "HW-J6000R/ZX"));
