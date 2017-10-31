@@ -1,7 +1,8 @@
 
 var ejecuciones = 0;
 var progreso = 0;
-var respiro =(3 * 60 * 1000);
+//(3 * 60 * 1000)
+var respiro = 10000;
 
 
 function printConsola(texto){
@@ -11,6 +12,7 @@ function printConsola(texto){
 	}
 	var print = previo + " <br> consola > " +  texto ;
 	$("#consola_amazon").html(print);
+    $("#consola_amazon").animate({ scrollTop: ($("#consola_amazon").height() * 10) }, 5000);
 }
 
 function iniciarProceso(){
@@ -92,7 +94,7 @@ function cargarProductos(){
             printConsola(response);
             ejecuciones = ejecuciones + 1;
             progreso = (100 / 20) * ejecuciones;
-            setProgreso(progreso); 
+            setProgreso(progreso);
         },
         error: function(error) {
         	printConsola("<span style='color:red'>" + error + "</span>");
