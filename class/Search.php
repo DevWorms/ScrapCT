@@ -610,6 +610,41 @@ class Search
 
         return null;
     }
+
+    /**
+     * @param $name
+     * @param $model
+     * @return null
+     */
+    public function searchOnLinio($name, $model) {
+        $url = "https://www.linio.com.mx/search?q=" . $this->spacesToPlus($model);
+        $crawler = $this->client->request('GET', $url);
+
+        // Los primeros productos
+        $productos = $crawler->filter('.catalogue-product')->each(function ($node) {
+            // Extrae el nombre del producto
+            $tmpProducto['name'] = $node->filter(".title-section")->first()->text();
+
+            // Extrae el enlace del producto
+            $tmpProducto['url'] = $node->filter(".title-section")->first()->attr('href');
+
+            return $tmpProducto;
+        });
+
+        foreach ($productos as $producto) {
+            if ($this->searchTextOnResult($model, $producto['name'])) {
+                return $producto;
+            } elseif ($this->searchNameOnResult($producto['name'], $name)) {
+                return $producto;
+            }
+        }
+
+        if (count($productos) > 0) {
+            return $productos[0];
+        }
+
+        return null;
+    }
 }
 
 $s = new Search();
@@ -630,3 +665,4 @@ $s = new Search();
 //print_r($s->searchOnClaroShop("Samsung Sm-G955F 64Gb Color Negro Galaxy S8 Plus", "S8"));
 //print_r($s->searchOnSanborns("Samsung Sm-G955F 64Gb Color Negro Galaxy S8 Plus", "S8")); // TODO
 //print_r($s->searchOnBestBuy("ACER - LAPTOP PREDATOR G9-593-78QJ DE 15.6", "ACER G9-593-78QJ"));
+//print_r($s->searchOnLinio("Samsung Galaxy S8+ Dual Sim 64GB", "S8"));
