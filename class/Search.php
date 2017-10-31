@@ -769,7 +769,7 @@ class Search
     }
 }
 
-$s = new Search();
+//$s = new Search();
 //$s->init("", "", "");
 //print_r($s->searchOnRadioShack("MICROCOMPONENTE LG CM2460", "LG CM2460"));
 //print_r($s->searchOnCyberPuerta("Monitor Gamer LG 24MP59G-P LED 23.8", "LG 24MP59G"));
