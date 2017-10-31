@@ -41,9 +41,11 @@
 			// Save Excel 2007 file
 			//date('H:i:s') 
 			$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+			$descarga = 'descarga/' . "productos_teccheck_".date("Y-m-d").".xlsx";
 			$destino = __DIR__ . '/../descarga/' . "productos_teccheck_".date("Y-m-d").".xlsx";
 			$objWriter->save($destino);
 
+			return $descarga;
 		
 		}
 
@@ -137,6 +139,17 @@
 		}
 	}
 
-	$excel = new GenerarExcel();
-	$excel->writeExcel();
+	if(isset($_POST['post'])){
+		$post= $_POST['post'];
+		$excel = new GenerarExcel();
+		switch ($post) {
+			case 'genera_excel':
+				echo $excel->writeExcel();
+				break;
+			default:
+				echo "No function";
+		}
+	}
+	
+	
  ?>
