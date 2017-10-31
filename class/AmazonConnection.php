@@ -331,11 +331,12 @@
 		 * @param  [array] $semilla [Nodos principales Electronics y Videjojuegos]
 		 * @return [array]          [Todos los nodos]
 		 */
-		private function getAllNodes($semilla){
+		public function getAllNodes($semilla){
 			echo "<br> consola > <b>Semilla inicial de nodos Electronicos y Videjojuegos ...</b>";
 			try{
 				//PADRES
 				foreach ($semilla as  $nodo) {
+
 					array_push($this->allNodes, $nodo); 
 					$resultado = $this->browseNodeLookup($nodo)['resultado'];
 					if($resultado != null ){
@@ -343,6 +344,9 @@
 						$hijos = $resultado->BrowseNode->Children->BrowseNode;
 						if(count($hijos)){
 							foreach ($hijos as $nodoHijo) {
+								if(!$this->existCategoria($nodoHijo->BrowseNodeId)){
+									$this->insertCategorias($nodoHijo->Name , $nodoHijo->BrowseNodeId);
+								}
 								array_push($this->allNodes, $nodoHijo->BrowseNodeId);
 								$resultado = $this->browseNodeLookup($nodoHijo->BrowseNodeId)['resultado'];
 								if($resultado != null ){
@@ -350,6 +354,9 @@
 									$nietos = $resultado->BrowseNode->Children->BrowseNode;
 									if(count($nietos)){
 										foreach ($nietos as $nodoNieto) {
+											if(!$this->existCategoria($nodoNieto->BrowseNodeId)){
+												$this->insertCategorias($nodoNieto->Name , $nodoNieto->BrowseNodeId);
+											}
 											array_push($this->allNodes, $nodoNieto->BrowseNodeId);
 										}
 									}
@@ -720,6 +727,39 @@
 			$result = $pdo->fetchAll();
 			return $result[0]['cuantos'];
 		}
+
+		private function insertCategorias($nombre,$browseNodeId){
+			// se insertan los terms
+			$slug = $this->slugify($nombre);
+			$query = "INSERT INTO wp_pwgb_terms(name,slug,term_group,browse_node_amazon) VALUES (:name,:slug,:term_group,:browse_node_amazon)";
+			$pdo = $this->db->prepare($query);
+			$pdo->bindValue(":name", $nombre);
+			$pdo->bindValue(":slug", $slug);
+			$pdo->bindValue(":term_group", 0);
+			$pdo->bindValue(":browse_node_amazon", $browseNodeId);
+			$pdo->execute();
+			$term_id = $this->db->lastInsertId();
+
+			$query_tax = "INSERT INTO wp_pwgb_term_taxonomy (term_id,taxonomy,description,parent,count) VALUES (:term_id,:taxonomy,:description,:parent,:count)";
+			$pdox = $this->db->prepare($query_tax);
+			$pdox->bindValue(":term_id", $term_id);
+			$pdox->bindValue(":taxonomy", 'category');
+			$pdox->bindValue(":description", '');
+			$pdox->bindValue(":parent", 0);
+			$pdox->bindValue(":count", 0);
+			$pdox->execute();
+
+			 
+		}
+
+		private function existCategoria($browseNodeId){
+			$query = "SELECT * FROM wp_pwgb_terms WHERE browse_node_amazon=:browse_node_amazon";
+			$pdo = $this->db->prepare($query);
+			$pdo->bindValue(":browse_node_amazon", $browseNodeId);
+			$pdo->execute();
+			$response = $pdo->fetchAll(PDO::FETCH_ASSOC);
+			return (count($response) > 0) ? true : false;
+		}
 				
 	}
 
@@ -744,7 +784,7 @@
 
 	$amazon = new AmazonConnection();
 	//$amazon->seccionarNodos();
-	$amazon->cargarProductos();
+	echo $amazon->getAllNodes($amazon->nodosBase);
 	
 
 ?>
