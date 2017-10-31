@@ -7,8 +7,7 @@
 		<title>ScrapCT</title>
 	</head>
 	<body>
-		<header class="titulos">
-			
+		<header class="titulos" style="color: black;box-shadow: none;">
 			<h1>Administrador - Web scraping</h1>
 		</header>
 		<br><br>
@@ -35,17 +34,8 @@
 				</form>
 			</div>
 		</div>
-		<footer class="cuerpo">
-			<img src="img/logo-teCheck-home.png">
-			<br>
-			Copyright 2017 |  Todos los derechos reservados  |  Aviso Legal
-
-		</footer>
-		<script>
-			window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')
-		</script>
-	    <script type="text/javascript" src="js/vendor/bootstrap.min.js"></script>
-	    <script type="text/javascript" src="js/notify.min.js"></script>
-	    <script type="text/javascript" src="js/usuario.js"></script>
+		<br>
+		<?php include 'footer.php' ?>
+	    <script type="text/javascript" src="js/login.js"></script>
 	</body>
 </html>
