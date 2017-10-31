@@ -1,8 +1,8 @@
 
 var ejecuciones = 0;
 var progreso = 0;
-//(3 * 60 * 1000)
-var respiro = 10000;
+// se tardara 3 minutos por cada peticion eso nos da 1hr en total
+var respiro =(3 * 60 * 1000);
 
 
 function printConsola(texto){
