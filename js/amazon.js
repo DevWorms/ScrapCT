@@ -1,7 +1,6 @@
 
 var ejecuciones = 0;
 var progreso = 0;
-//(3 * 60 * 1000)
 //var respiro = 10000;
 var respiro = (3 * 60 * 1000);
 

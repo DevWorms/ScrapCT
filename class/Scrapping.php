@@ -954,7 +954,7 @@ class Scrapping
     }
 }
 
-$s = new Scrapping();
+//$s = new Scrapping();
 //$s->setBestPrice(797);
 $s->getAllReviews();
 
