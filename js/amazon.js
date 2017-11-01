@@ -1,8 +1,8 @@
 
 var ejecuciones = 0;
 var progreso = 0;
-//var respiro = 10000;
-var respiro = (3 * 60 * 1000);
+var respiro = 10000;
+//var respiro = (3 * 60 * 1000);
 
 function printConsola(texto){
 	var previo = "";
@@ -98,6 +98,7 @@ function cargarProductos(){
         },
         error: function(error) {
             console.log(error);
+            console.log("Productos");
         	printConsola("<span style='color:red'>" + error + "</span>");
         },complete:function(){
         	if(ejecuciones <= 20){
