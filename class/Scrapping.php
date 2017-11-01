@@ -10,6 +10,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../app/DB.php';
 require_once __DIR__ . '/../traits/SchemaTrait.php';
 require_once __DIR__ . '/../traits/PriceTrait.php';
+require_once __DIR__ . '/AmazonConnection.php';
 
 use Goutte\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -101,10 +102,17 @@ class Scrapping
         $stm->execute();
 
         $response = $stm->fetchAll(PDO::FETCH_ASSOC);
+        echo "<div style='color:blue;'>Actualizando " . count($response) . " articulos.</div><br><br>";
+
         foreach ($response as $review) {
-            echo "Producto: " . $review["post_title"] . "<br>";
+            echo "<div style='color: blue'>Producto: " . $review["post_title"] . "</div><br>";
             // Obtiene los metadatos del producto
             $metadata = $this->getMetaData($review["ID"]);
+
+            // Imprime el asin
+            $asin = $this->getAsin($metadata);
+            echo "<strong>Asin: </strong>" . $asin . "<br>";
+
             // Nombres de las columnas de las diferentes tiendas
             $links = $this->productsLink();
             foreach ($links as $link) {
@@ -114,9 +122,18 @@ class Scrapping
                         // Si tiene una url del producto en las tiendas...
                         if (isset($mdata['meta_value']) && !empty($mdata['meta_value'])) {
                             // Obtiene el precio, haciendo scrapping
-                            $price = $this->linkToScrap($link, $mdata['meta_value']);
+                            if ($link == 'amazon_affiliate_link' || $link == 'amazon_pl') {
+                                $price = $this->linkToScrap($link, $asin);
+                            } else {
+                                $price = $this->linkToScrap($link, $mdata['meta_value']);
+                            }
                             // Valida si el precio del producto cambio
-                            echo $mdata['meta_value'] . "<br><strong>Precio: </strong>" . $price;
+                            // Imprime el link
+                            echo $mdata['meta_value'];
+                            // Imprime el precio
+                            echo "<br><strong>Precio: </strong>";
+                            echo (isset($price) && is_numeric($price) ? $price : "<div style='color: red'>El producto ya no se encuentra disponible</div>");
+
                             if ($price != null && $price != "" && !empty($price)) {
                                 $hasChanged = $this->priceHasChanged($metadata, $link, $price);
                                 if ($hasChanged["change"]) {
@@ -316,9 +333,41 @@ class Scrapping
             case 'radioshack_pl':
                 return $this->getRadioShackPrice($url);
                 break;
+            case 'linio_pl':
+                return $this->getLinioPrice($url);
+                break;
+            case 'linio_affiliate_link':
+                return $this->getLinioPrice($url);
+                break;
+            case 'amazon_affiliate_link':
+                return $this->getAmazonPrice($url);
+                break;
+            case 'amazon_pl':
+                return $this->getAmazonPrice($url);
+                break;
             default:
                 return null;
         }
+    }
+
+    /**
+     * Devuelve true si el precio de un producto cambio o no se encontró
+     *
+     * @param $meta_id
+     * @param $price
+     * @return array
+     */
+    public function getAsin($metadata) {
+        foreach ($metadata as $mdata) {
+            if (isset($mdata['meta_key']) && $mdata['meta_key'] == "asin") {
+                // Si tiene una url del producto en las tiendas...
+                if (isset($mdata['meta_value']) && !empty($mdata['meta_value'])) {
+                    return $mdata['meta_value'];
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -427,29 +476,33 @@ class Scrapping
      * @return int
      */
     public function getSanbornsPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.actual')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.regular')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.actual')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.regular')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -459,29 +512,33 @@ class Scrapping
      * @return null|string
      */
     public function getBestBuyPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.pb-hero-price')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.pb-regular-price')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.pb-hero-price')->each(function($node){
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.pb-regular-price')->each(function($node){
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->cleanPrice($elements[0]);
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -491,29 +548,33 @@ class Scrapping
      * @return null|string
      */
     public function getClaroShopPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.total')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.antes')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.total')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.antes')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->cleanPrice($elements[0]);
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -522,29 +583,33 @@ class Scrapping
      * @return null|string
      */
     public function getCoppelPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.pcontado')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.p_oferta')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.pcontado')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.p_oferta')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -553,29 +618,33 @@ class Scrapping
      * @return null|string
      */
     public function getSearsPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.precio')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.precio_secundario')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.precio')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.precio_secundario')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -584,29 +653,33 @@ class Scrapping
      * @return null|string
      */
     public function getCyberPuertaPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.detailsInfo_right_pricebox_border_left_price_price')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.detailsInfo_right_pricebox_border_left_price_price')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.detailsInfo_right_pricebox_border_left_price_price')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.detailsInfo_right_pricebox_border_left_price_price')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->cleanPrice($elements[0]);
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -615,29 +688,33 @@ class Scrapping
      * @return null|string
      */
     public function getRadioShackPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.big-price')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.pricebefore')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.big-price')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.pricebefore')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->cleanPrice($elements[0]);
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -646,29 +723,33 @@ class Scrapping
      * @return null|string
      */
     public function getCostcoPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.productdetail_inclprice')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.productdetail_exclprice')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.productdetail_inclprice')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.productdetail_exclprice')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->specialCostcoPrice($elements[0]);
             }
 
-            $price = $this->specialCostcoPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -677,29 +758,33 @@ class Scrapping
      * @return null|string
      */
     public function getSonyPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.skuBestPrice')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.skuListPrice')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.skuBestPrice')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.skuListPrice')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->cleanPrice($elements[0]);
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -708,29 +793,33 @@ class Scrapping
      * @return null|string
      */
     public function getElektraPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.skuBestPrice')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.skuListPrice')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.skuBestPrice')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.skuListPrice')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->cleanPrice($elements[0]);
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -739,36 +828,40 @@ class Scrapping
      * @return null|string
      */
     public function getSorianaPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.sale-price')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.original-price')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.sale-price')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.original-price')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.big-price')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->cleanPrice($elements[0]);
             }
 
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.big-price')->each(function($node){
-                    return $node->text();
-                });
-            }
-
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -777,29 +870,33 @@ class Scrapping
      * @return null|string
      */
     public function getPalacioPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.special-price')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.price')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.special-price')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.price')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->cleanPrice($elements[0]);
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -808,36 +905,40 @@ class Scrapping
      * @return null|string
      */
     public function getOfficeDepotPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.big-price')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.discountedPrice')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.big-price')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.discountedPrice')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.pricebefore ')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->cleanPrice($elements[0]);
             }
 
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.pricebefore ')->each(function($node){
-                    return $node->text();
-                });
-            }
-
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -846,29 +947,33 @@ class Scrapping
      * @return null|string
      */
     public function getOfficeMaxPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.skuBestPrice')->each(function($node){
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.skuListPrice')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.skuBestPrice')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.skuListPrice')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->cleanPrice($elements[0]);
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -878,24 +983,28 @@ class Scrapping
      * @return null|string
      */
     public function getWalMartPrice($url) {
-        $product_id = substr($url, -14);
+        try {
+            $product_id = substr($url, -14);
 
-        $price = null;
-        $getUrl = "https://www.walmart.com.mx/WebControls/hlGetProductDetail.ashx?upc=" . $product_id;
-        $text = utf8_decode(file_get_contents($getUrl));
-        $text = str_replace("var detailInfo = ", "", $text);
-        $text = str_replace(";", "", $text);
-        $text = stripslashes(html_entity_decode($text));
-        $json = json_decode($text);
+            $price = null;
+            $getUrl = "https://www.walmart.com.mx/WebControls/hlGetProductDetail.ashx?upc=" . $product_id;
+            $text = utf8_decode(file_get_contents($getUrl));
+            $text = str_replace("var detailInfo = ", "", $text);
+            $text = str_replace(";", "", $text);
+            $text = stripslashes(html_entity_decode($text));
+            $json = json_decode($text);
 
-        if (isset($json->offers) && count($json->offers) > 0) {
-            $price = $json->offers[0]->price;
-        } else {
-            $index = "_" . $product_id;
-            $price = $this->cleanPrice($json->c->facets->$index->p);
+            if (isset($json->offers) && count($json->offers) > 0) {
+                $price = $json->offers[0]->price;
+            } else {
+                $index = "_" . $product_id;
+                $price = $this->cleanPrice($json->c->facets->$index->p);
+            }
+
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -904,29 +1013,33 @@ class Scrapping
      * @return null|string
      */
     public function getSamsPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        if ($this->isBlocked($url)) {
-            echo "URL Bloqueada";
-        } else {
-            $crawler = $this->client->request('GET', $url);
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
 
-            // Precio actual
-            $elements = $crawler->filter('.prod-price-actual')->each(function ($node) {
-                return $node->text();
-            });
-
-            if (count($elements) < 1) {
-                // Precio regular
-                $elements = $crawler->filter('.prod-price-actual')->each(function($node){
+                // Precio actual
+                $elements = $crawler->filter('.prod-price-actual')->each(function ($node) {
                     return $node->text();
                 });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.prod-price-actual')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
-            $price = $this->cleanPrice($elements[0]);
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
-
-        return $price;
     }
 
     /**
@@ -936,28 +1049,72 @@ class Scrapping
      * @return null|string
      */
     public function getLiverpoolPrice($url) {
-        $price = null;
+        try {
+            $price = null;
 
-        $text = utf8_decode(file_get_contents($url));
+            $text = utf8_decode(file_get_contents($url));
 
-        foreach (preg_split("/((\r?\n)|(\r\n?))/", $text) as $line) {
-            if (strpos($line, "requiredlistprice") !== false) {
-                $price = $this->cleanPrice($line);
+            foreach (preg_split("/((\r?\n)|(\r\n?))/", $text) as $line) {
+                if (strpos($line, "requiredlistprice") !== false) {
+                    $price = $this->cleanPrice($line);
+                }
+
+                if (strpos($line, "requiredsaleprice") !== false) {
+                    $price = $this->cleanPrice($line);
+                }
             }
 
-            if (strpos($line, "requiredsaleprice") !== false) {
-                $price = $this->cleanPrice($line);
-            }
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
+    }
 
-        return $price;
+    public function getLinioPrice($url) {
+        try {
+            $price = null;
+
+            if ($this->isBlocked($url)) {
+                echo "<div style='color: red'>URL no disponible</div><br>";
+            } else {
+                $crawler = $this->client->request('GET', $url);
+
+                // Precio actual
+                $elements = $crawler->filter('.price-main')->each(function ($node) {
+                    return $node->text();
+                });
+
+                if (count($elements) < 1) {
+                    // Precio regular
+                    $elements = $crawler->filter('.original-price')->each(function ($node) {
+                        return $node->text();
+                    });
+                }
+
+                $price = $this->cleanPrice($elements[0]);
+            }
+
+            return $price;
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
+        }
+    }
+
+    public function getAmazonPrice($asin) {
+        try {
+            $a = new AmazonConnection();
+
+            return $a->getPriceAmazonApi($asin);
+        } catch (Exception $ex) {
+            echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
+        }
     }
 }
 
-//$s = new Scrapping();
-//$s->setBestPrice(797);
+$s = new Scrapping();
 $s->getAllReviews();
 
+//echo $s->getLinioPrice("https://www.linio.com.mx/p/televisio-n-hd-dw-display-dw-32d4-32-led-negro-ymmn53");
 //echo $s->getSanbornsPrice("https://www.sanborns.com.mx/Paginas/Producto.aspx?ean=50644691195");
 //echo $s->getBestBuyPrice("http://www.bestbuy.com.mx/p/sony-pantalla-de-40-led-1080p-smart-tv-hdtv-negro/1000198293");
 //echo $s->getClaroShopPrice("http://wwvv.claroshop.com/producto/493261/teclado-iluv-bluetooth-portatil/");

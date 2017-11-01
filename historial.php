@@ -26,12 +26,13 @@ require_once __DIR__ . '/app/link.php';
 <br>
 <script src="<?php echo app_url(); ?>js/jquery-3.2.1.min.js"></script>
 <script>
+    var APP_URL = '<?php echo app_url(); ?>';
     var prices = [], dates = [];
     <?php
         if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     ?>
         $.ajax({
-            url: 'http://localhost:8000/HQ/ScrapCT/class/Historial.php',
+            url: APP_URL + '/class/Historial.php',
             method: 'POST',
             data: {
                 get: 'historial',

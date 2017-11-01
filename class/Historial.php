@@ -22,7 +22,7 @@ class Historial
     }
 
     public function getHistorial($product_id) {
-        $query = "SELECT * FROM dw_historial WHERE product_id=:product_id";
+        $query = "SELECT * FROM dw_historial WHERE product_id=:product_id ORDER BY created_at ASC;";
         $stm = $this->db->prepare($query);
         $stm->bindValue(":product_id", $product_id, PDO::PARAM_INT);
         $stm->execute();

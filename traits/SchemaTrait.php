@@ -12,6 +12,7 @@ trait SchemaTrait
         return [
             'sanborns_pl',
             'linio_pl',
+            'amazon_pl',
             'claroshop_pl',
             'coppel_pl',
             'sears_pl',
