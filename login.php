@@ -1,9 +1,13 @@
+<?php 
+	require_once __DIR__ . '/app/link.php';
+?>
+
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="<?php echo app_url(); ?>css/bootstrap.min.css">
 		<link href="https://fonts.googleapis.com/css?family=Bree+Serif|Work+Sans" rel="stylesheet"> 
-		<link rel="stylesheet" type="text/css" href="css/estilos.css">
+		<link rel="stylesheet" type="text/css" href="<?php echo app_url(); ?>css/estilos.css">
 		<title>ScrapCT</title>
 	</head>
 	<body>
@@ -36,6 +40,6 @@
 		</div>
 		<br>
 		<?php include 'footer.php' ?>
-	    <script type="text/javascript" src="js/login.js"></script>
+	    <script type="text/javascript" src="<?php echo app_url(); ?>js/login.js"></script>
 	</body>
 </html>

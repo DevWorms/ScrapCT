@@ -1,10 +1,14 @@
+<?php
+require_once __DIR__ . '/app/link.php';
+?>
+
 <!doctype html>
 <html>
 
 <head>
     <title>Line Chart</title>
-    <script src="js/chartjs/Chart.bundle.js"></script>
-    <script src="js/chartjs/utils.js"></script>
+    <script src="<?php echo app_url(); ?>js/chartjs/Chart.bundle.js"></script>
+    <script src="<?php echo app_url(); ?>js/chartjs/utils.js"></script>
     <style>
         canvas{
             -moz-user-select: none;
@@ -20,14 +24,14 @@
 </div>
 <br>
 <br>
-<script src="/js/jquery-3.2.1.min.js"></script>
+<script src="<?php echo app_url(); ?>js/jquery-3.2.1.min.js"></script>
 <script>
     var prices = [], dates = [];
     <?php
         if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     ?>
         $.ajax({
-            url: '/class/Historial.php',
+            url: 'http://localhost:8000/HQ/ScrapCT/class/Historial.php',
             method: 'POST',
             data: {
                 get: 'historial',

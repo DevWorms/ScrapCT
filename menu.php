@@ -26,7 +26,7 @@
 		    	</a>
 		    </li>
 		    <li>
-		    	<a href="#">
+		    	<a href="scrapping">
 		    		<img src="img/ic_scrapping.png">
 		    		Scraping
 		    	</a>

@@ -1,11 +1,9 @@
 <?php 
 	if (!isset($_SESSION)) {
-
     	session_start();
 	}
 
-	if(!isset($_SESSION['id'] , $_SESSION['usuario'], $_SESSION['correo'])){
-		echo "SI SESSION";
+	if (!isset($_SESSION['id'] , $_SESSION['usuario'], $_SESSION['correo'])) {
 		session_destroy();
 		header('Location: error');
 	}

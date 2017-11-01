@@ -1,10 +1,14 @@
+<?php 
+	require_once __DIR__ . '/app/link.php';
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
 	<meta charset="UTF-8"/>
-	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo app_url(); ?>css/bootstrap.min.css">
 	<link href="https://fonts.googleapis.com/css?family=Bree+Serif|Work+Sans" rel="stylesheet">
-	<link rel="stylesheet" type="text/css" href="css/estilos.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo app_url(); ?>css/estilos.css">
 	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/start/jquery-ui.css">
 	<title>Teccheck</title>
 </head>
@@ -70,13 +74,13 @@
 		<div id="modal-avisoAmazon" title="x" style="overflow-x:hidden;display: none" align="left">
 			<h3 style="color: red">
 				<b>Atención ! </b>
-				<img src="img/warning.png">
+				<img src="<?php echo app_url(); ?>img/warning.png">
 			</h3 style="color: black">
 			<h4>Antes y durante el proceso es importante no apagar el equipo, seguir los pasos, no cerrar el navegador, y verificar que se tienen una buena conexión a internet.</h4>
 		</div>
 	</div>
 	
-	<script type="text/javascript" src="js/amazon.js"></script>
+	<script type="text/javascript" src="<?php echo app_url(); ?>js/amazon.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$("a[href=amazon]").addClass("menu-activo");

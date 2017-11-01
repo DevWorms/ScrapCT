@@ -2,8 +2,8 @@
 var ejecuciones = 0;
 var progreso = 0;
 //(3 * 60 * 1000)
-var respiro = 10000;
-
+//var respiro = 10000;
+var respiro = (3 * 60 * 1000);
 
 function printConsola(texto){
 	var previo = "";
@@ -56,6 +56,7 @@ function obtenerCategorias(){
             printConsola(response);
         },
         error: function(error) {
+            console.log(error);
         	printConsola("<span style='color:red'>" + error + "</span>");
         },complete:function(){
         	// al terminar el proceso cerramos los primeros dos pasos
@@ -97,6 +98,7 @@ function cargarProductos(){
             setProgreso(progreso);
         },
         error: function(error) {
+            console.log(error);
         	printConsola("<span style='color:red'>" + error + "</span>");
         },complete:function(){
         	if(ejecuciones <= 20){
@@ -125,6 +127,7 @@ function infoBefore(){
             $('#antes_bd').html("Existian " + response + " productos antes del proceso");
         },
         error: function(error) {
+            console.log(error);
         	printConsola("<span style='color:red'>" + error + "</span>");
         }
     });
@@ -142,6 +145,7 @@ function infoAfter(){
             $('#despues_bd').html(response + " productos despues del proceso");
         },
         error: function(error) {
+            console.log(error);
         	printConsola("<span style='color:red'>" + error + "</span>");
         }
     });

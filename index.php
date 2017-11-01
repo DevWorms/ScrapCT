@@ -10,5 +10,6 @@ $route->add('/tiendas', 'home.php');
 $route->add('/usuarios', 'usuarios.php');
 $route->add('/amazon', 'amazon.php');
 $route->add('/obtener-excel', 'excel.php');
+$route->add('/scrapping', 'scrapping.php');
 
 $route->submit();

@@ -1,5 +1,6 @@
 <?php 
 	require_once dirname(__FILE__) . '/../app/DB.php';
+	session_start();
 	/**
 	* Clase para las utilidades del usuario
 	*/
@@ -35,7 +36,7 @@
 	        if(count($resultado) > 0){
 	        	$resultado = $resultado[0];
 	        	//Generamos la sesion
-	        	session_start();
+	        	//session_start();
 	        	$_SESSION['id'] = $resultado['id'];
 	        	$_SESSION['usuario'] = $resultado['usuario'] . " " .$resultado['apellido'];
 	        	$_SESSION['correo'] = $resultado['correo'];

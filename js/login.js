@@ -11,7 +11,7 @@ $(document).ready(function() {
 function login(){
 	var datos = $("#form-login").serialize();
 	$.ajax({
-		url: 'class/User.php',
+		url: APP_URL + 'class/User.php',
 		type: 'POST',
 		dataType: 'json',
 		data: datos,
@@ -23,7 +23,7 @@ function login(){
 				var contenido = "<p style='color:blue'><br>" + response.mensaje+ "<br> Iniciando ... </p>";
 				$("#confirmacion").html(contenido);
 				setTimeout(function(){
-					window.location.replace("tiendas");
+					window.location.replace(APP_URL + "tiendas");
 				},2000);
 			}else{
 				var contenido = "<p style='color:red'><br>" + response.mensaje+ "*** </p>";

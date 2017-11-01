@@ -143,7 +143,6 @@ class Search
                     }
                     break;
             }
-            echo strtolower($shop) . "<br>";
         }
     }
 

@@ -96,7 +96,7 @@ class Scrapping
                     WHERE post_type = 'reviews' 
                     AND post_status = 'publish';";
 
-        $query = "SELECT * FROM wp_pwgb_posts WHERE post_type = 'reviews' AND post_status = 'publish' LIMIT 0, 2;";
+        //$query = "SELECT * FROM wp_pwgb_posts WHERE post_type = 'reviews' AND post_status = 'publish' LIMIT 0, 2;";
         $stm = $this->db->prepare($query);
         $stm->execute();
 
@@ -956,7 +956,7 @@ class Scrapping
 
 $s = new Scrapping();
 //$s->setBestPrice(797);
-//$s->getAllReviews();
+$s->getAllReviews();
 
 //echo $s->getSanbornsPrice("https://www.sanborns.com.mx/Paginas/Producto.aspx?ean=50644691195");
 //echo $s->getBestBuyPrice("http://www.bestbuy.com.mx/p/sony-pantalla-de-40-led-1080p-smart-tv-hdtv-negro/1000198293");
