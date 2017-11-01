@@ -142,7 +142,7 @@ class Scrapping
                                         echo " El precio cambio, precio original: " . $oldPrice;
                                         $this->updatePrice($link, $price, $mdata['post_id']);
                                     } else {
-                                        echo " El precio no existe, hay que crearlo";
+                                        echo " El precio no existe, se creo en la pabse de datos";
                                         $this->createPrice($link, $price, $mdata['post_id']);
                                     }
                                 }
@@ -532,7 +532,7 @@ class Scrapping
                     });
                 }
 
-                $price = $this->cleanPrice($elements[0]);
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
             return $price;
@@ -568,7 +568,7 @@ class Scrapping
                     });
                 }
 
-                $price = $this->cleanPrice($elements[0]);
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
             return $price;
@@ -673,7 +673,7 @@ class Scrapping
                     });
                 }
 
-                $price = $this->cleanPrice($elements[0]);
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
             return $price;
@@ -708,7 +708,7 @@ class Scrapping
                     });
                 }
 
-                $price = $this->cleanPrice($elements[0]);
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
             return $price;
@@ -778,7 +778,7 @@ class Scrapping
                     });
                 }
 
-                $price = $this->cleanPrice($elements[0]);
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
             return $price;
@@ -813,7 +813,7 @@ class Scrapping
                     });
                 }
 
-                $price = $this->cleanPrice($elements[0]);
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
             return $price;
@@ -855,7 +855,7 @@ class Scrapping
                     });
                 }
 
-                $price = $this->cleanPrice($elements[0]);
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
             return $price;
@@ -890,7 +890,7 @@ class Scrapping
                     });
                 }
 
-                $price = $this->cleanPrice($elements[0]);
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
             return $price;
@@ -932,7 +932,7 @@ class Scrapping
                     });
                 }
 
-                $price = $this->cleanPrice($elements[0]);
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
             return $price;
@@ -967,7 +967,7 @@ class Scrapping
                     });
                 }
 
-                $price = $this->cleanPrice($elements[0]);
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
             return $price;
@@ -1091,7 +1091,7 @@ class Scrapping
                     });
                 }
 
-                $price = $this->cleanPrice($elements[0]);
+                $price = (isset($elements[0])) ? $this->cleanPrice($elements[0]) : null;
             }
 
             return $price;

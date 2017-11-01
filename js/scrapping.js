@@ -41,8 +41,8 @@ function iniciarProceso(){
     $.ajax({
         url: APP_URL + 'class/Scrapping.php',
         success: function (res) {
-            printConsola("<span style='color:blue'>" + res + "</span>");
-            setProgreso(100);
+            printConsola(res);
+            setProgreso(90);
         },
         error: function (res) {
             printConsola("<span style='color:blue'>" + res.responseText + "</span>");
