@@ -27,6 +27,10 @@ class AmazonConnection
             'electronicos' => '9482559011'
         );
         $this->allNodes = array("");
+
+        if(ini_get('max_execution_time') < 120){
+                ini_set('max_execution_time', 120);
+        }
     }
 
     /**
@@ -72,10 +76,9 @@ class AmazonConnection
             $pdo2->bindValue(":post_id", $post_id, PDO::PARAM_INT);
             $pdo2->execute();
             $response2 = $pdo2->fetchAll(PDO::FETCH_ASSOC);
-
             // El precio de amazon existe
             if (count($response2) > 0) {
-                if ($price == $response[0]["price_amazon"]) {
+                if ($price == $response2[0]["meta_value"]) {
                     // El precio es el mismo
                     return false;
                 }
@@ -105,9 +108,8 @@ class AmazonConnection
                 $query = "UPDATE wp_pwgb_postmeta SET meta_value=:price WHERE meta_key='price_amazon' AND post_id=:post_id;";
                 $pdo2 = $this->db->prepare($query);
                 $pdo2->bindValue(":price", $price, PDO::PARAM_INT);
-                $pdo2->bindValue(":post_id", $response[0][0], PDO::PARAM_INT);
+                $pdo2->bindValue(":post_id", $response[0]['post_id'], PDO::PARAM_INT);
                 $pdo2->execute();
-
                 return ["status" => 1, "message" => "success"];
             } else {
                 // TODO Crear el producto
@@ -195,7 +197,8 @@ class AmazonConnection
             $query_relate = "INSERT INTO wp_pwgb_term_relationships (object_id,term_taxonomy_id,term_order) VALUES (:object_id,:term_taxonomy_id,:term_order)";
 
             $taxonomy_id = $this->getTaxonomiId($nodo);
-            $taxonomy_id = (isset($taxonomy_id) && is_numeric($taxonomy_id)) ? $taxonomy_id :
+
+            $taxonomy_id = (isset($taxonomy_id) && is_numeric($taxonomy_id)) ? $taxonomy_id : 1 ;
 
             $pdo9 = $this->db->prepare($query_relate);
             $pdo9->bindValue(":object_id", $post_id);

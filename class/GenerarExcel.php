@@ -11,7 +11,10 @@
 		function __construct(){
 			$this->db = DB::init()->getDB();
 			//PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);
-			ini_set('max_execution_time', 600);
+			if(ini_get('max_execution_time') < 600){
+				ini_set('max_execution_time', 600);
+			}
+			
 		}
 
 		public function writeExcel(){
