@@ -31,7 +31,7 @@ function login(){
 			}
 		},
 		error:function(erro) {
-			alert(erro);
+			alert(erro.responseText);
 		}
 	});
 }

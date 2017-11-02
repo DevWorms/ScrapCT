@@ -693,6 +693,7 @@ class Search
      * @return null
      */
     public function searchOnSanborns($name, $model) {
+        /*
         $url = "http://buscador.sanborns.com.mx/search?client=Sanborns&output=xml_no_dtd&proxystylesheet=Sanborns&sort=date:D:L:d1&oe=UTF-8&ie=UTF-8&ud=1&exclude_apps=1&site=Sanborns&ulang=es&access=p&entqr=3&entqrm=0&filter=0&getfields=*&q=" . $model;
         $data = file_get_contents($url);
 
@@ -700,7 +701,6 @@ class Search
         $doc->loadHTML($data);
         $summary = $doc->getElementById('title_2');
 
-        print_r($summary->textContent);
         /*
         // Los primeros productos
         $productos = $crawler->filter('.l')->each(function ($node) {
