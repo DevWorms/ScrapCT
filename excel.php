@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+<?php 
+	require_once __DIR__ . '/app/link.php';
+?>
 <html>
 <head>
 	<meta charset="UTF-8"/>
@@ -9,6 +11,7 @@
 	<title>Teccheck</title>
 </head>
 <body>
+
 	<?php 
 		include 'header.php';
 	?>
@@ -31,7 +34,7 @@
 		
 	</div>
 
-	<script type="text/javascript" src="js/excel.js"></script>
+	<script type="text/javascript" src="<?php echo app_url(); ?>js/excel.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$("a[href=obtener-excel]").addClass("menu-activo");
