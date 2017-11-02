@@ -5,7 +5,7 @@
  * Date: 18/10/17
  * Time: 12:30 AM
  */
-define("DATABASE", "teccheck");
+define("DATABASE", "tc");
 define("HOSTNAME", "localhost");
 define("USERNAME", "root");
 define("PASSWORD", "dr4g0n");

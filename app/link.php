@@ -1,6 +1,6 @@
 <?php
 
-	define("APP_URL", "http://localhost/teccheck/HQ/ScrapCT");
+	define("APP_URL", "http://localhost/ScrapCT");
 
     function app_url() {
         if ((strtolower(substr(APP_URL, 0, 7)) == "http://") || (strtolower(substr(APP_URL, 0, 8)) == "https://")) {
