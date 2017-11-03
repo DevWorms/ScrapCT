@@ -21,6 +21,7 @@ class Scrapping
     use SchemaTrait, PriceTrait;
     private $client;
     private $db;
+    private $block;
 
     /**
      * Scrapping constructor.
@@ -28,6 +29,7 @@ class Scrapping
      */
     public function __construct()
     {
+        $this->block = 10;
         $this->client = new Client();
         $this->db = DB::init()->getDB();
     }
@@ -45,30 +47,6 @@ class Scrapping
 
         $response = $pdo->fetchAll(PDO::FETCH_ASSOC);
         return $response;
-    }
-
-    /**
-     * Inicia el scrapping a una lista de paginas
-     */
-    public function init() {
-        //$pages = $this->getPages();
-        $pages = ["http://www.bestbuy.com.mx/c/productos/c3"];
-
-        foreach ($pages as $page) {
-            // TODO si la tienda nos bloquea, hacemos la conexión a través de proxy
-            if ($this->isBlocked($page)) {
-
-            } else {
-                $crawler = $this->client->request('GET', $page);
-
-                $nodeValues = $crawler->filter('li')->each(function (Crawler $node, $i) {
-                    return $node->text();
-                });
-
-                //print_r($nodeValues);
-                echo $this->client->getResponse();
-            }
-        }
     }
 
     /**
@@ -92,17 +70,8 @@ class Scrapping
     /**
      * Obtiene todos los productos de la BD para hacer scrapping
      */
-    public function getAllReviews() {
-        $query = "SELECT * FROM wp_pwgb_posts
-                    WHERE post_type = 'reviews' 
-                    AND post_status = 'publish';";
-
-        //$query = "SELECT * FROM wp_pwgb_posts WHERE post_type = 'reviews' AND post_status = 'publish' LIMIT 0, 2;";
-        $stm = $this->db->prepare($query);
-        $stm->execute();
-
-        $response = $stm->fetchAll(PDO::FETCH_ASSOC);
-        echo "<div style='color:blue;'>Actualizando " . count($response) . " articulos.</div><br><br>";
+    public function getAllReviews($response, $hasta, $total) {
+        echo "<div style='color:blue;'>Actualizando " . $hasta . " de " . $total . " articulos.</div><br><br>";
 
         foreach ($response as $review) {
             echo "<div style='color: blue'>Producto: " . $review["post_title"] . "</div><br>";
@@ -142,7 +111,7 @@ class Scrapping
                                         echo " El precio cambio, precio original: " . $oldPrice;
                                         $this->updatePrice($link, $price, $mdata['post_id']);
                                     } else {
-                                        echo " El precio no existe, se creo en la pabse de datos";
+                                        echo " El precio no existe, se creo en la base de datos";
                                         $this->createPrice($link, $price, $mdata['post_id']);
                                     }
                                 }
@@ -160,6 +129,64 @@ class Scrapping
         }
 
         return $response;
+    }
+
+    public function init() {
+        $query = "SELECT * FROM dw_scraping;";
+        $stm = $this->db->prepare($query);
+        $stm->execute();
+        $status = $stm->fetchAll(PDO::FETCH_ASSOC);
+
+        $query = "SELECT count(*) FROM wp_pwgb_posts
+                    WHERE post_type = 'reviews' 
+                    AND post_status = 'publish'";
+        $stm2 = $this->db->prepare($query);
+        $stm2->execute();
+        $total = $stm2->fetchAll()[0][0];
+
+        if (count($status) > 0) {
+            // Empieza el scraping
+            $current = $status[0]['current_position'];
+            if ($current >= $total) {
+                return "0";
+            }
+            $this->updateScraping(($this->block + $current), $total);
+        } else {
+            // Inicia el scraping de cero
+            $current = 0;
+            $this->updateScraping($this->block + 1, $total);
+        }
+
+        $hasta = ($current == 0) ? 10 : ($current + $this->block - 1);
+        $desde = ($current == 0) ? 1 : $current;
+
+        $query = "SELECT * FROM wp_pwgb_posts
+                    WHERE post_type = 'reviews' 
+                    AND post_status = 'publish'
+                    LIMIT :current_item,:next_item;";
+
+        $stm3 = $this->db->prepare($query);
+        $stm3->bindValue(":current_item", $desde, PDO::PARAM_INT);
+        $stm3->bindValue(":next_item", $hasta, PDO::PARAM_INT);
+        $stm3->execute();
+        $response = $stm3->fetchAll(PDO::FETCH_ASSOC);
+
+        $this->getAllReviews($response, $hasta, $total);
+    }
+
+    public function updateScraping($current_position, $total) {
+        if ($current_position == $this->block + 1) {
+            $query = "INSERT INTO dw_scraping (current_position, total, started_at, finished) VALUES (:cu, :t, NOW(), FALSE );";
+            $stm = $this->db->prepare($query);
+            $stm->bindValue(":cu", $current_position, PDO::PARAM_INT);
+            $stm->bindValue(":t", $total, PDO::PARAM_INT);
+            $stm->execute();
+        } else {
+            $query = "UPDATE dw_scraping SET current_position=:cu;";
+            $stm = $this->db->prepare($query);
+            $stm->bindValue(":cu", $current_position, PDO::PARAM_INT);
+            $stm->execute();
+        }
     }
 
     /**
@@ -1112,7 +1139,8 @@ class Scrapping
 }
 
 $s = new Scrapping();
-$s->getAllReviews();
+//$s->getAllReviews();
+$s->init();
 
 //echo $s->getLinioPrice("https://www.linio.com.mx/p/televisio-n-hd-dw-display-dw-32d4-32-led-negro-ymmn53");
 //echo $s->getSanbornsPrice("https://www.sanborns.com.mx/Paginas/Producto.aspx?ean=50644691195");
