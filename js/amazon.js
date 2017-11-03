@@ -1,8 +1,8 @@
 
 var ejecuciones = 0;
 var progreso = 0;
-var respiro = 10000;
-//var respiro = (3 * 60 * 1000);
+var veces = 20;
+var respiro = (2 * 60 * 1000);
 
 function printConsola(texto){
 	var previo = "";
@@ -92,8 +92,8 @@ function cargarProductos(){
         dataType: 'html',
         success: function(response) {
             printConsola(response);
-            ejecuciones = ejecuciones + 1;
-            progreso = (100 / 20) * ejecuciones;
+            ejecuciones = ejecuciones  + 1;
+            progreso = (100 / veces) * ejecuciones;
             setProgreso(progreso);
         },
         error: function(error) {
@@ -101,7 +101,7 @@ function cargarProductos(){
             console.log("Productos");
         	printConsola("<span style='color:red'>" + error + "</span>");
         },complete:function(){
-        	if(ejecuciones <= 20){
+        	if(ejecuciones <= veces){
         		setTimeout(function(){
         			cargarProductos();
         		},respiro);

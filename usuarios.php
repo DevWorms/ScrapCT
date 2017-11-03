@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+<?php 
+	require_once __DIR__ . '/app/link.php';
+?>
 <html>
 <head>
 	<meta charset="UTF-8"/>
@@ -71,7 +73,7 @@
 		
 	</div>
 	
-	<script type="text/javascript" src="js/usuario.js"></script>
+	<script type="text/javascript" src="<?php echo app_url(); ?>js/usuario.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$("a[href=usuarios]").addClass("menu-activo");
