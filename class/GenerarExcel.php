@@ -64,8 +64,11 @@
 			$hoja = 0;
 			$productos = $this->getMaster();
 			// formato de cabeceras
+			$objPHPExcel->setActiveSheetIndex(0);
+			$nombre_hoja = date("Ymd");
+			$objPHPExcel->getActiveSheet()->setTitle($nombre_hoja);
 			foreach ($productos as  $producto) {
-				$objPHPExcel->setActiveSheetIndex($hoja);
+				
 				// encabezados
 				$this->encabezados($objPHPExcel);
 				// ajustamos el width al contenido
@@ -74,6 +77,7 @@
 				}
 				// categoria y dato master
 				$objPHPExcel->getActiveSheet()->SetCellValue('A'.$row, $fecha);
+				$objPHPExcel->getActiveSheet()->SetCellValue('AA'.$row, $this->getCategoria($producto['post_id']));
 				$objPHPExcel->getActiveSheet()->SetCellValue('D'.$row, $producto['post_nombre']);
 				// detalles
 				$detalles = $this->getMeta($producto['post_id']);
@@ -156,19 +160,16 @@
 					}
 				}
 
-				$objPHPExcel->getActiveSheet()->setTitle('pro_'.$hoja);
+				
 				$row++;
-				if($row >1001){
-					$row = 2;
-					$hoja++;
-					$objPHPExcel->createSheet();
-				}
+				
 			}
 
 		}
 
 		private function encabezados($objPHPExcel){
 			$style = array( 'font' => array('size' => 14,'bold' => true) );
+			$objPHPExcel->getActiveSheet()->SetCellValue('AA1','Categoria');
 			$objPHPExcel->getActiveSheet()->SetCellValue('A1','Fecha');
 			$objPHPExcel->getActiveSheet()->SetCellValue('B1','Fabricante');
 			$objPHPExcel->getActiveSheet()->SetCellValue('C1','Modelo');
@@ -195,7 +196,7 @@
 			$objPHPExcel->getActiveSheet()->SetCellValue('X1','Precio Sony');
 			$objPHPExcel->getActiveSheet()->SetCellValue('Y1','Precio Costco');
 			$objPHPExcel->getActiveSheet()->SetCellValue('Z1','Precio RadioShack');
-			$objPHPExcel->getActiveSheet()->getStyle('A1:Z1')->applyFromArray($style);
+			$objPHPExcel->getActiveSheet()->getStyle('A1:AA1')->applyFromArray($style);
 			
 		}
 		private function getMaster(){
