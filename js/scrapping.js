@@ -9,7 +9,7 @@ function printConsola(texto){
 }
 
 function iniciarProceso(){
-	printConsola("<span style='color:blue'>Proceso inicializado</span>");
+	printConsola("<span style='color:blue'>Proceso inicializado, obteniendo status</span>");
 	$("#segundo_amazon").slideDown(1000);
 	$("#primer_amazon button").attr('disabled', 'true');
 	 var tamano = 50 / 100;
@@ -42,11 +42,24 @@ function iniciarProceso(){
         url: APP_URL + 'class/Scrapping.php',
         success: function (res) {
             printConsola(res);
-            setProgreso(90);
+
+            if (res == 0) {
+                printConsola("<div style='color: red;'>Proceso finalizado</div>");
+            } else {
+                iniciarProceso();
+            }
         },
         error: function (res) {
             printConsola("<span style='color:blue'>" + res.responseText + "</span>");
             setProgreso(100);
+        }, complete: function (res) {
+            printConsola(res);
+
+            if (res == 0) {
+                printConsola("<div style='color: red;'>Proceso finalizado</div>");
+            } else {
+                iniciarProceso();
+            }
         }
     });
 }

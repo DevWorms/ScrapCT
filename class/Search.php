@@ -152,7 +152,7 @@ class Search
             $stm = $this->db->prepare($query);
             $stm->bindValue(":post_id", $post_id, PDO::PARAM_INT);
             $stm->bindValue(":shop", $shop, PDO::PARAM_STR);
-            $stm->bindValue(":url", $post_id, PDO::PARAM_STR);
+            $stm->bindValue(":url", $url, PDO::PARAM_STR);
             $stm->execute();
 
         } catch (Exception $ex) {
@@ -167,29 +167,33 @@ class Search
      * @param $model
      */
     public function searchOnLiverpool($name, $model) {
-        $url = "https://www.liverpool.com.mx/tienda/?s=" . $this->spacesToPlus($model);
-        $crawler = $this->client->request("GET", $url);
+        try {
+            $url = "https://www.liverpool.com.mx/tienda/?s=" . $this->spacesToPlus($model);
+            $crawler = $this->client->request("GET", $url);
 
-        // Los primeros productos
-        $productos = $crawler->filter('.product-cell ')->each(function ($node) {
-            // Extrae el nombre del producto
-            $tmpProducto['name'] =$node->filter(".gtmProdName")->first()->attr('value');
+            // Los primeros productos
+            $productos = $crawler->filter('.product-cell ')->each(function ($node) {
+                // Extrae el nombre del producto
+                $tmpProducto['name'] = $node->filter(".gtmProdName")->first()->attr('value');
 
-            // Extrae el enlace del producto
-            //$tmpProducto['url'] = $node->filter("#actionPathId_1061927251")->first()->attr('value');
+                // Extrae el enlace del producto TODO
+                //$tmpProducto['url'] = $node->filter("#actionPathId_1061927251")->first()->attr('value');
 
-            return $tmpProducto;
-        });
+                return $tmpProducto;
+            });
 
-        foreach ($productos as $producto) {
-            if ($this->searchTextOnResult($model, $producto['name'])) {
-                return $producto;
-            } elseif ($this->searchNameOnResult($producto['name'], $name)) {
-                return $producto;
+            foreach ($productos as $producto) {
+                if ($this->searchTextOnResult($model, $producto['name'])) {
+                    return $producto;
+                } elseif ($this->searchNameOnResult($producto['name'], $name)) {
+                    return $producto;
+                }
             }
-        }
 
-        return [];
+            return [];
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**
@@ -384,29 +388,33 @@ class Search
      * @return null
      */
     public function searchOnOfficeMax($name, $model) {
-        $url = "http://www.officemax.com.mx/" . $model . "?&utmi_p=_&utmi_pc=BuscaFullText&utmi_cp=" . $model;
-        $crawler = $this->client->request('GET', $url);
+        try {
+            $url = "http://www.officemax.com.mx/" . $model . "?&utmi_p=_&utmi_pc=BuscaFullText&utmi_cp=" . $model;
+            $crawler = $this->client->request('GET', $url);
 
-        // Los primeros productos
-        $productos = $crawler->filter('.product-item')->each(function ($node) {
-            // Extrae el nombre del producto
-            $tmpProducto['name'] = $node->filter(".contenedor-img")->first()->attr("title");
+            // Los primeros productos
+            $productos = $crawler->filter('.product-item')->each(function ($node) {
+                // Extrae el nombre del producto
+                $tmpProducto['name'] = $node->filter(".contenedor-img")->first()->attr("title");
 
-            // Extrae el enlace del producto
-            $tmpProducto['url'] = $node->filter(".contenedor-img")->first()->attr('href');
+                // Extrae el enlace del producto
+                $tmpProducto['url'] = $node->filter(".contenedor-img")->first()->attr('href');
 
-            return $tmpProducto;
-        });
+                return $tmpProducto;
+            });
 
-        foreach ($productos as $producto) {
-            if ($this->searchTextOnResult($model, $producto['name'])) {
-                return $producto;
-            } elseif ($this->searchNameOnResult($producto['name'], $name)) {
-                return $producto;
+            foreach ($productos as $producto) {
+                if ($this->searchTextOnResult($model, $producto['name'])) {
+                    return $producto;
+                } elseif ($this->searchNameOnResult($producto['name'], $name)) {
+                    return $producto;
+                }
             }
-        }
 
-        return null;
+            return null;
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**
@@ -415,22 +423,26 @@ class Search
      * @return array|null
      */
     public function searchOnOfficeDepot($name, $model) {
-        $url = "https://www.officedepot.com.mx/officedepot/en/search/autocomplete/SearchBox?term=" . $this->spacesToPlus($model);
-        $response = file_get_contents($url);
-        $json = json_decode($response);
-        if (count($json->products) > 0) {
-            return ['name' => $json->products[0]->name, 'url' => "https://www.officedepot.com.mx" . $json->products[0]->url];
-        } else {
-            $url = "https://www.officedepot.com.mx/officedepot/en/search/autocomplete/SearchBox?term=" . $this->spacesToPlus($name);
+        try {
+            $url = "https://www.officedepot.com.mx/officedepot/en/search/autocomplete/SearchBox?term=" . $this->spacesToPlus($model);
             $response = file_get_contents($url);
             $json = json_decode($response);
-
             if (count($json->products) > 0) {
                 return ['name' => $json->products[0]->name, 'url' => "https://www.officedepot.com.mx" . $json->products[0]->url];
-            }
-        }
+            } else {
+                $url = "https://www.officedepot.com.mx/officedepot/en/search/autocomplete/SearchBox?term=" . $this->spacesToPlus($name);
+                $response = file_get_contents($url);
+                $json = json_decode($response);
 
-        return null;
+                if (count($json->products) > 0) {
+                    return ['name' => $json->products[0]->name, 'url' => "https://www.officedepot.com.mx" . $json->products[0]->url];
+                }
+            }
+
+            return null;
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**
@@ -439,39 +451,43 @@ class Search
      * @return null
      */
     public function searchOnPalacio($name, $model) {
-        $url = "https://www.elpalaciodehierro.com/catalogsearch/result/?q=" . $this->spacesToPlus($model);
-        $crawler = $this->client->request('GET', $url);
+        try {
+            $url = "https://www.elpalaciodehierro.com/catalogsearch/result/?q=" . $this->spacesToPlus($model);
+            $crawler = $this->client->request('GET', $url);
 
-        // Los primeros productos
-        $productos = $crawler->filter('.scroll_image_js')->each(function ($node) {
-            // Extrae el nombre del producto
-            $names = $node->filter(".product-name")->each(function ($n) {
-                return $n->text();
+            // Los primeros productos
+            $productos = $crawler->filter('.scroll_image_js')->each(function ($node) {
+                // Extrae el nombre del producto
+                $names = $node->filter(".product-name")->each(function ($n) {
+                    return $n->text();
+                });
+                $tmpProducto['name'] = $names[0];
+
+                // Extrae el enlace del producto
+                $urls = $node->filter(".product-image")->each(function ($n) {
+                    return $n->attr('href');
+                });
+                $tmpProducto['url'] = "https://www.elpalaciodehierro.com" . $urls[0];
+
+                return $tmpProducto;
             });
-            $tmpProducto['name'] = $names[0];
 
-            // Extrae el enlace del producto
-            $urls = $node->filter(".product-image")->each(function ($n) {
-                return $n->attr('href');
-            });
-            $tmpProducto['url'] = "https://www.elpalaciodehierro.com" . $urls[0];
-
-            return $tmpProducto;
-        });
-
-        foreach ($productos as $producto) {
-            if ($this->searchTextOnResult($model, $producto['name'])) {
-                return $producto;
-            } elseif ($this->searchNameOnResult($producto['name'], $name)) {
-                return $producto;
+            foreach ($productos as $producto) {
+                if ($this->searchTextOnResult($model, $producto['name'])) {
+                    return $producto;
+                } elseif ($this->searchNameOnResult($producto['name'], $name)) {
+                    return $producto;
+                }
             }
-        }
 
-        if (count($productos) > 0) {
-            return $productos[0];
-        }
+            if (count($productos) > 0) {
+                return $productos[0];
+            }
 
-        return null;
+            return null;
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**
@@ -480,21 +496,25 @@ class Search
      * @return array|null
      */
     public function searchOnSoriana($name, $model) {
-        $url = "https://www.soriana.com/soriana/es/search/autocomplete/SearchBox?term=" . $this->spacesToPlus($model);
-        $response = file_get_contents($url);
-        $json = json_decode($response);
-        if (count($json->products) > 0) {
-            return ['name' => $json->products[0]->name, 'url' => "https://www.soriana.com" . $json->products[0]->url];
-        } else {
-            $url = "https://www.soriana.com/soriana/es/search/autocomplete/SearchBox?term=" . $this->spacesToPlus($name);
+        try {
+            $url = "https://www.soriana.com/soriana/es/search/autocomplete/SearchBox?term=" . $this->spacesToPlus($model);
             $response = file_get_contents($url);
             $json = json_decode($response);
-
             if (count($json->products) > 0) {
                 return ['name' => $json->products[0]->name, 'url' => "https://www.soriana.com" . $json->products[0]->url];
+            } else {
+                $url = "https://www.soriana.com/soriana/es/search/autocomplete/SearchBox?term=" . $this->spacesToPlus($name);
+                $response = file_get_contents($url);
+                $json = json_decode($response);
+
+                if (count($json->products) > 0) {
+                    return ['name' => $json->products[0]->name, 'url' => "https://www.soriana.com" . $json->products[0]->url];
+                }
             }
+            return null;
+        } catch (Exception $ex) {
+            return null;
         }
-        return null;
     }
 
     /**
@@ -503,23 +523,27 @@ class Search
      * @return array|null
      */
     public function searchOnElektra($name, $model) {
-        $url = "https://www.elektra.com.mx/buscaautocomplete/?maxRows=10&productNameContains=" . $this->spacesToPlus($model) . "&suggestionsStack=";
-        $response = file_get_contents($url);
-        $json = json_decode($response);
-
-        if (count($json->itemsReturned) > 0) {
-            return ['name' => $json->itemsReturned[0]->name, 'url' => $json->itemsReturned[0]->href];
-        } else {
-            $url = "https://www.elektra.com.mx/buscaautocomplete/?maxRows=10&productNameContains=" . $this->spacesToPlus($name) . "&suggestionsStack=";
+        try {
+            $url = "https://www.elektra.com.mx/buscaautocomplete/?maxRows=10&productNameContains=" . $this->spacesToPlus($model) . "&suggestionsStack=";
             $response = file_get_contents($url);
             $json = json_decode($response);
 
             if (count($json->itemsReturned) > 0) {
                 return ['name' => $json->itemsReturned[0]->name, 'url' => $json->itemsReturned[0]->href];
-            }
-        }
+            } else {
+                $url = "https://www.elektra.com.mx/buscaautocomplete/?maxRows=10&productNameContains=" . $this->spacesToPlus($name) . "&suggestionsStack=";
+                $response = file_get_contents($url);
+                $json = json_decode($response);
 
-        return null;
+                if (count($json->itemsReturned) > 0) {
+                    return ['name' => $json->itemsReturned[0]->name, 'url' => $json->itemsReturned[0]->href];
+                }
+            }
+
+            return null;
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**
@@ -528,23 +552,27 @@ class Search
      * @return array|null
      */
     public function searchOnSony($name, $model) {
-        $url = "https://store.sony.com.mx/api/catalog_system/pub/products/search/" . $model . "?_from=0&_to=9";
-        $response = file_get_contents($url);
-        $json = json_decode($response);
-
-        if (count($json) > 0) {
-            return ['name' => $json[0]->productName, 'url' => $json[0]->link];
-        } else {
-            $url = "https://store.sony.com.mx/api/catalog_system/pub/products/search/" . $name . "?_from=0&_to=9";
+        try {
+            $url = "https://store.sony.com.mx/api/catalog_system/pub/products/search/" . $model . "?_from=0&_to=9";
             $response = file_get_contents($url);
             $json = json_decode($response);
 
             if (count($json) > 0) {
                 return ['name' => $json[0]->productName, 'url' => $json[0]->link];
-            }
-        }
+            } else {
+                $url = "https://store.sony.com.mx/api/catalog_system/pub/products/search/" . $name . "?_from=0&_to=9";
+                $response = file_get_contents($url);
+                $json = json_decode($response);
 
-        return null;
+                if (count($json) > 0) {
+                    return ['name' => $json[0]->productName, 'url' => $json[0]->link];
+                }
+            }
+
+            return null;
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**
@@ -553,23 +581,27 @@ class Search
      * @return array|null
      */
     public function searchOnCostco($name, $model) {
-        $url = "http://www.costco.com.mx/view/search.json?term=" . $this->spacesToPlus($model);
-        $response = file_get_contents($url);
-        $json = json_decode($response);
-
-        if (count($json) > 0) {
-            return ['name' => $json[0]->label, 'url' => "http://www.costco.com.mx" . $json[0]->url];
-        } else {
-            $url = "http://www.costco.com.mx/view/search.json?term=" . $this->spacesToPlus($name);
+        try {
+            $url = "http://www.costco.com.mx/view/search.json?term=" . $this->spacesToPlus($model);
             $response = file_get_contents($url);
             $json = json_decode($response);
 
             if (count($json) > 0) {
                 return ['name' => $json[0]->label, 'url' => "http://www.costco.com.mx" . $json[0]->url];
-            }
-        }
+            } else {
+                $url = "http://www.costco.com.mx/view/search.json?term=" . $this->spacesToPlus($name);
+                $response = file_get_contents($url);
+                $json = json_decode($response);
 
-        return null;
+                if (count($json) > 0) {
+                    return ['name' => $json[0]->label, 'url' => "http://www.costco.com.mx" . $json[0]->url];
+                }
+            }
+
+            return null;
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**
@@ -578,35 +610,39 @@ class Search
      * @return null
      */
     public function searchOnSears($name, $model) {
-        $url = "http://www.sears.com.mx/buscar/autocomplete_ajax.php?data=" . $model . "&id=c&null";
-        $crawler = $this->client->request('GET', $url);
+        try {
+            $url = "http://www.sears.com.mx/buscar/autocomplete_ajax.php?data=" . $model . "&id=c&null";
+            $crawler = $this->client->request('GET', $url);
 
-        // Los primeros productos
-        $productos = $crawler->filter('li')->each(function ($node) {
-            // Extrae el nombre del producto
-            $tmpProducto['name'] = $node->filter("a")->first()->text();
-            //$tmpProducto['name'] = explode("SKU", $tmpName)[0];
+            // Los primeros productos
+            $productos = $crawler->filter('li')->each(function ($node) {
+                // Extrae el nombre del producto
+                $tmpProducto['name'] = $node->filter("a")->first()->text();
+                //$tmpProducto['name'] = explode("SKU", $tmpName)[0];
 
-            // Extrae el enlace del producto
-            $tmpProducto['url'] = "http://www.sears.com.mx/" . $node->filter("a")->first()->attr('href');
-            //$tmpProducto['url'] = "https://www.radioshack.com.mx" . $node->filter(".productMainLink")->first()->attr('href');
+                // Extrae el enlace del producto
+                $tmpProducto['url'] = "http://www.sears.com.mx/" . $node->filter("a")->first()->attr('href');
+                //$tmpProducto['url'] = "https://www.radioshack.com.mx" . $node->filter(".productMainLink")->first()->attr('href');
 
-            return $tmpProducto;
-        });
+                return $tmpProducto;
+            });
 
-        foreach ($productos as $producto) {
-            if ($this->searchTextOnResult($model, $producto['name'])) {
-                return $producto;
-            } elseif ($this->searchNameOnResult($producto['name'], $name)) {
-                return $producto;
+            foreach ($productos as $producto) {
+                if ($this->searchTextOnResult($model, $producto['name'])) {
+                    return $producto;
+                } elseif ($this->searchNameOnResult($producto['name'], $name)) {
+                    return $producto;
+                }
             }
-        }
 
-        if (count($productos) > 0) {
-            return $productos[0];
-        }
+            if (count($productos) > 0) {
+                return $productos[0];
+            }
 
-        return null;
+            return null;
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**
@@ -615,38 +651,42 @@ class Search
      * @return array
      */
     public function searchOnCoppel($name, $model) {
-        $url = "http://www.coppel.com/SearchDisplay?categoryId=&storeId=12761&catalogId=10001&langId=-5&sType=SimpleSearch&resultCatEntryType=2&showResultsPage=true&searchSource=Q&pageView=&beginIndex=0&pageSize=18&searchTerm=" . $this->spacesToPlus($model);
-        $crawler = $this->client->request('GET', $url);
+        try {
+            $url = "http://www.coppel.com/SearchDisplay?categoryId=&storeId=12761&catalogId=10001&langId=-5&sType=SimpleSearch&resultCatEntryType=2&showResultsPage=true&searchSource=Q&pageView=&beginIndex=0&pageSize=18&searchTerm=" . $this->spacesToPlus($model);
+            $crawler = $this->client->request('GET', $url);
 
-        // Los primeros productos
-        $productos = $crawler->filter('.1')->each(function ($node) {
-            // Extrae el nombre del producto
-            $names = $node->filter(".m0")->each(function ($n) {
-                return $n->text();
+            // Los primeros productos
+            $productos = $crawler->filter('.1')->each(function ($node) {
+                // Extrae el nombre del producto
+                $names = $node->filter(".m0")->each(function ($n) {
+                    return $n->text();
+                });
+
+                $tmpProducto['name'] = $names[0];
+                //$tmpProducto['name'] = $node->filter(".m0")->first()->text();
+
+                // Extrae el enlace del producto
+                $tmpProducto['url'] = $node->filter("a")->first()->attr('href');
+
+                return $tmpProducto;
             });
 
-            $tmpProducto['name'] = $names[0];
-            //$tmpProducto['name'] = $node->filter(".m0")->first()->text();
-
-            // Extrae el enlace del producto
-            $tmpProducto['url'] = $node->filter("a")->first()->attr('href');
-
-            return $tmpProducto;
-        });
-
-        foreach ($productos as $producto) {
-            if ($this->searchTextOnResult($model, $producto['name'])) {
-                return $producto;
-            } elseif ($this->searchNameOnResult($producto['name'], $name)) {
-                return $producto;
+            foreach ($productos as $producto) {
+                if ($this->searchTextOnResult($model, $producto['name'])) {
+                    return $producto;
+                } elseif ($this->searchNameOnResult($producto['name'], $name)) {
+                    return $producto;
+                }
             }
-        }
 
-        if (count($productos) > 0) {
-            return $productos[0];
-        }
+            if (count($productos) > 0) {
+                return $productos[0];
+            }
 
-        return $productos;
+            return $productos;
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**
@@ -655,36 +695,40 @@ class Search
      * @return null
      */
     public function searchOnClaroShop($name, $model) {
-        $url = "https://w3.claroshop.com/buscador/" . base64_encode($model) . "/1/";
-        $crawler = $this->client->request('GET', $url);
+        try {
+            $url = "https://w3.claroshop.com/buscador/" . base64_encode($model) . "/1/";
+            $crawler = $this->client->request('GET', $url);
 
-        // Los primeros productos
-        $productos = $crawler->filter('.productbox')->each(function ($node) {
-            // Extrae el nombre del producto
-            $names = $node->filter(".descrip")->each(function ($n) {
-                return $n->text();
+            // Los primeros productos
+            $productos = $crawler->filter('.productbox')->each(function ($node) {
+                // Extrae el nombre del producto
+                $names = $node->filter(".descrip")->each(function ($n) {
+                    return $n->text();
+                });
+                $tmpProducto['name'] = explode("Vendido", $names[0])[0];
+
+                // Extrae el enlace del producto
+                $tmpProducto['url'] = "https://w3.claroshop.com" . $node->filter(".descrip")->first()->attr('href');
+
+                return $tmpProducto;
             });
-            $tmpProducto['name'] = explode("Vendido", $names[0])[0];
 
-            // Extrae el enlace del producto
-            $tmpProducto['url'] = "https://w3.claroshop.com" . $node->filter(".descrip")->first()->attr('href');
-
-            return $tmpProducto;
-        });
-
-        foreach ($productos as $producto) {
-            if ($this->searchTextOnResult($model, $producto['name'])) {
-                return $producto;
-            } elseif ($this->searchNameOnResult($producto['name'], $name)) {
-                return $producto;
+            foreach ($productos as $producto) {
+                if ($this->searchTextOnResult($model, $producto['name'])) {
+                    return $producto;
+                } elseif ($this->searchNameOnResult($producto['name'], $name)) {
+                    return $producto;
+                }
             }
-        }
 
-        if (count($productos) > 0) {
-            return $productos[0];
-        }
+            if (count($productos) > 0) {
+                return $productos[0];
+            }
 
-        return null;
+            return null;
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**
@@ -738,38 +782,42 @@ class Search
      * @return null
      */
     public function searchOnLinio($name, $model) {
-        $url = "https://www.linio.com.mx/search?q=" . $this->spacesToPlus($model);
-        $crawler = $this->client->request('GET', $url);
+        try {
+            $url = "https://www.linio.com.mx/search?q=" . $this->spacesToPlus($model);
+            $crawler = $this->client->request('GET', $url);
 
-        // Los primeros productos
-        $productos = $crawler->filter('.catalogue-product')->each(function ($node) {
-            // Extrae el nombre del producto
-            $tmpProducto['name'] = $node->filter(".title-section")->first()->text();
+            // Los primeros productos
+            $productos = $crawler->filter('.catalogue-product')->each(function ($node) {
+                // Extrae el nombre del producto
+                $tmpProducto['name'] = $node->filter(".title-section")->first()->text();
 
-            // Extrae el enlace del producto
-            $tmpProducto['url'] = $node->filter(".title-section")->first()->attr('href');
+                // Extrae el enlace del producto
+                $tmpProducto['url'] = $node->filter(".title-section")->first()->attr('href');
 
-            return $tmpProducto;
-        });
+                return $tmpProducto;
+            });
 
-        foreach ($productos as $producto) {
-            if ($this->searchTextOnResult($model, $producto['name'])) {
-                return $producto;
-            } elseif ($this->searchNameOnResult($producto['name'], $name)) {
-                return $producto;
+            foreach ($productos as $producto) {
+                if ($this->searchTextOnResult($model, $producto['name'])) {
+                    return $producto;
+                } elseif ($this->searchNameOnResult($producto['name'], $name)) {
+                    return $producto;
+                }
             }
-        }
 
-        if (count($productos) > 0) {
-            return $productos[0];
-        }
+            if (count($productos) > 0) {
+                return $productos[0];
+            }
 
-        return null;
+            return null;
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 }
 
-//$s = new Search();
-//$s->init("", "", "");
+$s = new Search();
+$s->init($argv[1], $argv[2], $argv[3]);
 //print_r($s->searchOnRadioShack("MICROCOMPONENTE LG CM2460", "LG CM2460"));
 //print_r($s->searchOnCyberPuerta("Monitor Gamer LG 24MP59G-P LED 23.8", "LG 24MP59G"));
 //print_r($s->searchOnWalmart("Barra de Sonido Curva Samsung 2.1 Canales HW-J6000R", "HW-J6000R/ZX"));

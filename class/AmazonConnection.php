@@ -28,7 +28,7 @@ class AmazonConnection
         );
         $this->allNodes = array("");
 
-        if(ini_get('max_execution_time') < 120){
+        if (ini_get('max_execution_time') < 120) {
                 ini_set('max_execution_time', 120);
         }
     }
@@ -147,7 +147,6 @@ class AmazonConnection
             $pdo->execute();
 
             $post_id = $this->db->lastInsertId();
-            $this->search->init($producto, $modelo, $post_id);
 
             $query_metadata = "INSERT INTO wp_pwgb_postmeta (meta_value, meta_key, post_id) VALUES (:asin, 'asin', :post_id);";
             $pdo2 = $this->db->prepare($query_metadata);
@@ -205,6 +204,9 @@ class AmazonConnection
             $pdo9->bindValue(":term_taxonomy_id", $taxonomy_id);
             $pdo9->bindValue(":term_order", 0);
             $pdo9->execute();
+
+            //$this->search->init($producto, $modelo, $post_id);
+            exec('php class/Search.php "' . $producto . '" "' . $modelo . '" "' . $post_id . '" >> test.txt');
 
         } catch (Exception $e) {
             echo json_encode(["status" => 0, "message" => $e->getMessage()]) . "<br>";
