@@ -148,6 +148,7 @@ class Scrapping
             // Empieza el scraping
             $current = $status[0]['current_position'];
             if ($current >= $total) {
+                $this->finishScraping();
                 return "0";
             }
             $this->updateScraping(($this->block + $current), $total);
@@ -187,6 +188,12 @@ class Scrapping
             $stm->bindValue(":cu", $current_position, PDO::PARAM_INT);
             $stm->execute();
         }
+    }
+
+    public function finishScraping() {
+        $query = "UPDATE dw_scraping SET finished_at=now(), finished=TRUE;";
+        $stm = $this->db->prepare($query);
+        $stm->execute();
     }
 
     /**

@@ -52,6 +52,14 @@ function iniciarProceso(){
         error: function (res) {
             printConsola("<span style='color:blue'>" + res.responseText + "</span>");
             setProgreso(100);
+        }, complete: function (res) {
+            printConsola(res);
+
+            if (res == 0) {
+                printConsola("<div style='color: red;'>Proceso finalizado</div>");
+            } else {
+                iniciarProceso();
+            }
         }
     });
 }
