@@ -152,7 +152,7 @@ class Search
             $stm = $this->db->prepare($query);
             $stm->bindValue(":post_id", $post_id, PDO::PARAM_INT);
             $stm->bindValue(":shop", $shop, PDO::PARAM_STR);
-            $stm->bindValue(":url", $post_id, PDO::PARAM_STR);
+            $stm->bindValue(":url", $url, PDO::PARAM_STR);
             $stm->execute();
 
         } catch (Exception $ex) {
@@ -167,29 +167,33 @@ class Search
      * @param $model
      */
     public function searchOnLiverpool($name, $model) {
-        $url = "https://www.liverpool.com.mx/tienda/?s=" . $this->spacesToPlus($model);
-        $crawler = $this->client->request("GET", $url);
+        try {
+            $url = "https://www.liverpool.com.mx/tienda/?s=" . $this->spacesToPlus($model);
+            $crawler = $this->client->request("GET", $url);
 
-        // Los primeros productos
-        $productos = $crawler->filter('.product-cell ')->each(function ($node) {
-            // Extrae el nombre del producto
-            $tmpProducto['name'] =$node->filter(".gtmProdName")->first()->attr('value');
+            // Los primeros productos
+            $productos = $crawler->filter('.product-cell ')->each(function ($node) {
+                // Extrae el nombre del producto
+                $tmpProducto['name'] = $node->filter(".gtmProdName")->first()->attr('value');
 
-            // Extrae el enlace del producto
-            //$tmpProducto['url'] = $node->filter("#actionPathId_1061927251")->first()->attr('value');
+                // Extrae el enlace del producto TODO
+                //$tmpProducto['url'] = $node->filter("#actionPathId_1061927251")->first()->attr('value');
 
-            return $tmpProducto;
-        });
+                return $tmpProducto;
+            });
 
-        foreach ($productos as $producto) {
-            if ($this->searchTextOnResult($model, $producto['name'])) {
-                return $producto;
-            } elseif ($this->searchNameOnResult($producto['name'], $name)) {
-                return $producto;
+            foreach ($productos as $producto) {
+                if ($this->searchTextOnResult($model, $producto['name'])) {
+                    return $producto;
+                } elseif ($this->searchNameOnResult($producto['name'], $name)) {
+                    return $producto;
+                }
             }
-        }
 
-        return [];
+            return [];
+        } catch (Exception $ex) {
+            return null;
+        }
     }
 
     /**
@@ -812,8 +816,8 @@ class Search
     }
 }
 
-//$s = new Search();
-//$s->init("", "", "");
+$s = new Search();
+$s->init($argv[1], $argv[2], $argv[3]);
 //print_r($s->searchOnRadioShack("MICROCOMPONENTE LG CM2460", "LG CM2460"));
 //print_r($s->searchOnCyberPuerta("Monitor Gamer LG 24MP59G-P LED 23.8", "LG 24MP59G"));
 //print_r($s->searchOnWalmart("Barra de Sonido Curva Samsung 2.1 Canales HW-J6000R", "HW-J6000R/ZX"));
