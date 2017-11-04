@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../app/DB.php';
-require_once __DIR__ . '/Search.php';
 error_reporting(E_ALL);
 
 /**
@@ -14,13 +13,11 @@ class AmazonConnection
     const AWS_ASSOCIATE_TAG = 'tecchec-20';
     const AWS_SERVICIO = 'AWSECommerceService';
 
-    private $search;
     public $nodosBase;
     public $allNodes;
 
     function __construct()
     {
-        $this->search = new Search();
         $this->db = DB::init()->getDB();
         $this->nodosBase = array(
             'videojuegos' => '9482691011',
@@ -205,7 +202,6 @@ class AmazonConnection
             $pdo9->bindValue(":term_order", 0);
             $pdo9->execute();
 
-            //$this->search->init($producto, $modelo, $post_id);
             exec('php class/Search.php "' . $producto . '" "' . $modelo . '" "' . $post_id . '" >> test.txt');
 
         } catch (Exception $e) {
@@ -233,19 +229,6 @@ class AmazonConnection
         }
 
         return $text;
-    }
-
-
-    /**
-     * Busca un producto de Amazon en las demás tiendas, en base a su nombre, modelo y fabricante
-     *
-     * @param $name
-     * @param $model
-     * @param $company
-     */
-    public function searchProduct($name, $model, $company)
-    {
-
     }
 
     /**
