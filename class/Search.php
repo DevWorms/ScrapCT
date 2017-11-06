@@ -146,6 +146,24 @@ class Search
         }
     }
 
+    public function all() {
+        $query = "SELECT p.*, m.* FROM wp_pwgb_posts p
+                    INNER JOIN wp_pwgb_postmeta m
+                      ON p.ID=m.post_id
+                    WHERE p.post_type = 'reviews' 
+                    AND p.post_status = 'publish'
+                    AND m.meta_key='model'
+                    AND p.ID BETWEEN 7801 AND 7900;";
+        $stm2 = $this->db->prepare($query);
+        $stm2->execute();
+        $productos = $stm2->fetchAll(PDO::FETCH_ASSOC);
+        echo "Total: " . count($productos) . "<br><br>";
+
+        foreach ($productos as $producto) {
+            $this->init($producto["post_title"], $producto["meta_value"], $producto["ID"]);
+        }
+    }
+
     public function saveProducto($shop, $post_id, $url) {
         try {
             $query = "INSERT INTO wp_pwgb_postmeta (post_id, meta_key, meta_value) VALUES (:post_id, :shop, :url);";
@@ -155,8 +173,10 @@ class Search
             $stm->bindValue(":url", $url, PDO::PARAM_STR);
             $stm->execute();
 
+            echo "Producto encontrado: " . $url . " Post: " . $post_id . "<br><br>";
+
         } catch (Exception $ex) {
-            echo $ex->getMessage();
+            echo "Error: " . $ex->getMessage() . "<br><br>";
         }
     }
 
@@ -792,7 +812,7 @@ class Search
                 $tmpProducto['name'] = $node->filter(".title-section")->first()->text();
 
                 // Extrae el enlace del producto
-                $tmpProducto['url'] = $node->filter(".title-section")->first()->attr('href');
+                $tmpProducto['url'] = "https://www.linio.com.mx" . $node->filter(".title-section")->first()->attr('href');
 
                 return $tmpProducto;
             });
@@ -817,7 +837,8 @@ class Search
 }
 
 $s = new Search();
-$s->init($argv[1], $argv[2], $argv[3]);
+//$s->init($argv[1], $argv[2], $argv[3]);
+$s->all();
 //print_r($s->searchOnRadioShack("MICROCOMPONENTE LG CM2460", "LG CM2460"));
 //print_r($s->searchOnCyberPuerta("Monitor Gamer LG 24MP59G-P LED 23.8", "LG 24MP59G"));
 //print_r($s->searchOnWalmart("Barra de Sonido Curva Samsung 2.1 Canales HW-J6000R", "HW-J6000R/ZX"));

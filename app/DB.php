@@ -5,10 +5,10 @@
  * Date: 18/10/17
  * Time: 12:30 AM
  */
-define("DATABASE", "tc");
-define("HOSTNAME", "localhost");
+define("DATABASE", "teccheck");
+define("HOSTNAME", "teccheck.c4grwswsltbr.us-east-2.rds.amazonaws.com");
 define("USERNAME", "root");
-define("PASSWORD", "dr4g0n");
+define("PASSWORD", "06720Doctores!");
 
 class DB
 {
@@ -26,11 +26,15 @@ class DB
 
     public static function init()
     {
-        if (self::$db === null) {
-            self::$db = new self();
-        }
+        try {
+            if (self::$db === null) {
+                self::$db = new self();
+            }
 
-        return self::$db;
+            return self::$db;
+        } catch (PDOException $e) {
+            return json_encode(["status" => "error", "message" => $e->getMessage()]);
+        }
     }
 
     public function getDB()
