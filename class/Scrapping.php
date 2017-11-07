@@ -132,39 +132,12 @@ class Scrapping
     }
 
     public function init() {
-        $query = "SELECT * FROM dw_scraping;";
-        $stm = $this->db->prepare($query);
-        $stm->execute();
-        $status = $stm->fetchAll(PDO::FETCH_ASSOC);
-
-        $query = "SELECT count(*) FROM wp_pwgb_posts
-                    WHERE post_type = 'reviews' 
-                    AND post_status = 'publish'";
-        $stm2 = $this->db->prepare($query);
-        $stm2->execute();
-        $total = $stm2->fetchAll()[0][0];
-
-        if (count($status) > 0) {
-            // Empieza el scraping
-            $current = $status[0]['current_position'];
-            if ($current >= $total) {
-                $this->finishScraping();
-                return "0";
-            }
-            $this->updateScraping(($this->block + $current), $total);
-        } else {
-            // Inicia el scraping de cero
-            $current = 0;
-            $this->updateScraping($this->block + 1, $total);
-        }
-
-        $hasta = ($current == 0) ? 10 : ($current + $this->block - 1);
-        $desde = ($current == 0) ? 1 : $current;
-
+        
+        // cabmiar esntos intervalos
         $query = "SELECT * FROM wp_pwgb_posts
                     WHERE post_type = 'reviews' 
                     AND post_status = 'publish'
-                    LIMIT :current_item,:next_item;";
+                    BETWEEN 11 AND 60;";
 
         $stm3 = $this->db->prepare($query);
         $stm3->bindValue(":current_item", $desde, PDO::PARAM_INT);
