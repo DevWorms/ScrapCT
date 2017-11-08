@@ -74,9 +74,8 @@ class Scrapping
     /**
      * Obtiene todos los productos de la BD para hacer scrapping
      */
-    public function getAllReviews($response, $hasta, $total) {
-        echo "<div style='color:blue;'>Actualizando " . $hasta . " de " . $total . " articulos.</div><br><br>";
-
+    public function getAllReviews($response) {
+        
         foreach ($response as $review) {
             echo "<div style='color: blue'>Producto: " . $review["post_title"] . "</div><br>";
             // Obtiene los metadatos del producto
@@ -144,12 +143,11 @@ class Scrapping
                     BETWEEN 11 AND 60;";
 
         $stm3 = $this->db->prepare($query);
-        $stm3->bindValue(":current_item", $desde, PDO::PARAM_INT);
-        $stm3->bindValue(":next_item", $hasta, PDO::PARAM_INT);
+
         $stm3->execute();
         $response = $stm3->fetchAll(PDO::FETCH_ASSOC);
 
-        $this->getAllReviews($response, $hasta, $total);
+        $this->getAllReviews($response);
     }
 
     public function updateScraping($current_position, $total) {
