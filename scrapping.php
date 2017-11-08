@@ -27,39 +27,43 @@ include 'header.php';
         <div class="row">
             <div class="col-md-12" align="center">
                 <ol class="lista_amazon">
-                    <li id="primer_amazon">
+                    <li id="primer_scrap">
                         <button class="btn btn-info" onclick="iniciarProceso();">
                             Iniciar
                         </button>
                         <br><br>
                     </li>
-                    <li style="display: none;" id="cuarto_amazon">
-                        <h4 id='antes_bd'>Productos previos en la base de daos 4500</h4>
-                        <h4 id='despues_bd'>Productos en la base de datos actualmente 4500</h4>
-                        <a class="btn btn-primary" href='amazon' target="_self">
-                            Finalizar
-                        </a>
+                    <li id="segundo_scrap" style="display: none;">
+                        <button class="btn btn-success" onclick="getURLs();">
+                            Obtener URL de productos
+                        </button>
                         <br><br>
                     </li>
+                    <li id="tercer_scrap" style="display: none;">
+                        <button class="btn btn-primary" onclick="ejecutarScraping();">
+                            Ejecutar Scraping
+                        </button>
+                        <br><br>
+                    </li>
+                    <li id="cuarto_scrap"></li>
                 </ol>
-
                 <div class="bar_fondo" style="display: none">
-                    <div id="bar_amazon" class="bar_liquid">
+                    <div id="bar_scrapping" class="bar_liquid">
                         0
                     </div>
                 </div>
 
             </div>
             <div class="col-md-12">
-                <label for="consola_amazon">
+                <label for="consola_scrapping">
                     <b>Consola</b>
                 </label>
-                <div id="consola_amazon" class="form-control consola"></div>
+                <div id="consola_scrapping" class="form-control consola"></div>
             </div>
         </div>
         <?php include 'footer.php' ?>
     </div>
-    <div id="modal-avisoAmazon" title="x" style="overflow-x:hidden;display: none" align="left">
+    <div id="modal-avisoScrap" title="x" style="overflow-x:hidden;display: none" align="left">
         <h3 style="color: red">
             <b>Atención ! </b>
             <img src="<?php echo app_url(); ?>img/warning.png">

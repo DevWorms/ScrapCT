@@ -134,16 +134,17 @@ class Scrapping
         return $response;
     }
 
-    public function init() {
+    public function init($inicio, $fin) {
         
         // cabmiar esntos intervalos
         $query = "SELECT * FROM wp_pwgb_posts
                     WHERE post_type = 'reviews' 
                     AND post_status = 'publish'
-                    BETWEEN 11 AND 60;";
+                    BETWEEN :inicio AND :fin;";
 
         $stm3 = $this->db->prepare($query);
-
+        $stm3->bindParam(":inicio", $inicio);
+        $stm3->bindParam(":fin", $fin);
         $stm3->execute();
         $response = $stm3->fetchAll(PDO::FETCH_ASSOC);
 
@@ -1118,38 +1119,28 @@ class Scrapping
             echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
     }
+
+    public function getLastID(){
+        $query = "SELECT MAX(ID) as ultimo FROM wp_pwgb_posts";
+        $pdo = $this->db->prepare($query);
+        $pdo->execute();
+        return $result[0]['ultimo'];
+    }
+
 }
 
-$s = new Scrapping();
-//$s->getAllReviews();
-$s->init();
-
-//echo $s->getLinioPrice("https://www.linio.com.mx/p/televisio-n-hd-dw-display-dw-32d4-32-led-negro-ymmn53");
-//echo $s->getSanbornsPrice("https://www.sanborns.com.mx/Paginas/Producto.aspx?ean=50644691195");
-//echo $s->getBestBuyPrice("http://www.bestbuy.com.mx/p/sony-pantalla-de-40-led-1080p-smart-tv-hdtv-negro/1000198293");
-//echo $s->getClaroShopPrice("http://wwvv.claroshop.com/producto/493261/teclado-iluv-bluetooth-portatil/");
-//echo $s->getCoppelPrice("http://www.coppel.com/pantalla-led-sony-40-pulgadas-full-hd-smart-tv-kdl-40w650d-la1-pm-2245913");
-//echo $s->getSearsPrice("http://www.sears.com.mx/producto/573080/led-sony-40-full-hd-smart-kdl40w650d/");
-//echo $s->getCyberPuertaPrice("https://www.cyberpuerta.mx/index.php?cl=details&anid=df765142eaee513e0d53a10c1f434d58&gclid=CjwKCAjw9O3NBRB3EiwAK6wPT2cix-udis_dzQ0jbOJ0JmuaI7JOb3K3hLJwPv4Ma0mIstS9MTf3_xoCm8UQAvD_BwE");
-//echo $s->getRadioShackPrice("https://www.radioshack.com.mx/store/radioshack/en/Categor%C3%ADa/Todas/Gadgets-y-Drones/Drones-y-Radio-Control/Helic%C3%B3pteros/HELICOPTERO-RADIO-CONTROL-VICA-X-ZERO/p/70965");
-//echo $s->getCostcoPrice("http://www.costco.com.mx/view/p/lg-led-55-smart-tv-ultra-hd-641445");
-//echo $s->getCostcoPrice("http://www.costco.com.mx/view/p/lg-barra-de-sonido-bluetooth-con-subwoofer-integrado-641437?utm_source=homepage&utm_medium=desktop_fy18p2w3&utm_campaign=buyerspick&utm_term=lg%2Bbarra%2Bde%2Bsonido%2B641437&utm_content=pos3");
-//echo $s->getSonyPrice("https://store.sony.com.mx/mhc-v90dw/p");
-//echo $s->getSonyPrice("https://store.sony.com.mx/xperia-touch/p");
-//echo $s->getElektraPrice("https://www.elektra.com.mx/pantalla-led-lg-55-4k-smart-55uh7650-1006936/p");
-//echo $s->getElektraPrice("https://www.elektra.com.mx/pantalla-led-hkpro-32-hd-smart-hkp32sm4sm5-1003802/p");
-//echo $s->getSorianaaPrice("https://www.soriana.com/soriana/es/c/Electronica/Pantallas/Pantallas/Pantalla-LED-SmartTV-LG-de-55%22-UHD,-4K/p/11202913");
-//echo $s->getSorianaaPrice("https://www.soriana.com/soriana/es/c/Electronica/Pantallas/Pantallas/Pantalla-LED-Smart-TV-LG-55%22-UHD,-4K-/p/11176387");
-//echo $s->getPalacioPrice("https://www.elpalaciodehierro.com/tecnologia/tecnologia-celulares/r9-apple-iphone-8-plus-silv-64gb-lae-esp.html");
-//echo $s->getPalacioPrice("https://www.elpalaciodehierro.com/tecnologia/tecnologia-celulares/38127805-r9-samsung-lte-sma720f-galaxy-a7-17-neg.html");
-//echo $s->getOfficeDepotPrice("https://www.officedepot.com.mx/officedepot/en/Categor%C3%ADa/Todas/Electr%C3%B3nica/Pantallas/Pantallas/PANTALLA-SAMSUNG-32-PULGADAS-SMART-HD/p/66020");
-//echo $s->getOfficeDepotPrice("https://www.officedepot.com.mx/officedepot/en/Categor%C3%ADa/Todas/Electr%C3%B3nica/Pantallas/PANTALLA-LG-55%22-%28SUHD%2C-SMART-TV%29/p/79661");
-//echo $s->getOfficeMaxPrice("http://www.officemax.com.mx/pantalla-jvc-32--smart-tv/p");
-//echo $s->getOfficeMaxPrice("http://www.officemax.com.mx/cable-hdmi-general-electric-73580-de-3-pies--69535/p");
-//echo $s->getWalMartPrice("https://www.walmart.com.mx/Celulares/Smartphones/Celulares-Desbloqueados/Smartphone-Samsung-Galaxy-J7-Pro-16GB-Negro-Desbloqueado_00880608881303");
-//echo $s->getWalMartPrice("https://www.walmart.com.mx/Celulares/Smartphones/Celulares-Desbloqueados/Huawei-Mate-S-32GB-Champagne-Huawei---CRRL-09_00690144309192");
-//echo $s->getLiverpoolPrice("https://www.liverpool.com.mx/tienda/smartphone-samsung-s8-5-8-pulgadas-negro-at-t/1057898018?skuId=1057898018");
-//echo $s->getLiverpoolPrice("https://www.liverpool.com.mx/tienda/iphone-8-plus-at-t/1062802902?skuId=1062691821");
-//echo $s->getLiverpoolPrice("https://www.liverpool.com.mx/tienda/iphone-se-at-t/1057592887?skuId=1047690281");
-
-//echo $s->getSamsPrice("https://www.sams.com.mx/microondas-y-hornos-electricos/horno-de-microondas-lg-1-5-pies-cubicos/000189096");
+if (isset($_POST['post'])) {
+    $post = $_POST['post'];
+    $scrap = new Scrapping();
+    switch ($post) {
+        case 'ultimoId':
+            echo $scrap->getLastID();
+            break;
+        case 'init':
+            $scrap->init($_POST['inicio'] , $_POST['fin']);
+            break;
+        default:
+            header("Location: 404.php");
+            break;
+    }
+}

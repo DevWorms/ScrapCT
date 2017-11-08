@@ -146,15 +146,17 @@ class Search
         }
     }
 
-    public function all() {
+    public function all($inicio, $fin) {
         $query = "SELECT p.*, m.* FROM wp_pwgb_posts p
                     INNER JOIN wp_pwgb_postmeta m
                       ON p.ID=m.post_id
                     WHERE p.post_type = 'reviews' 
                     AND p.post_status = 'publish'
                     AND m.meta_key='model'
-                    AND p.ID BETWEEN 7801 AND 7900;";
+                    AND p.ID BETWEEN :inicio AND :fin;";
         $stm2 = $this->db->prepare($query);
+        $stm2->bindParam(":inicio", $inicio);
+        $stm2->bindParam(":fin", $fin);
         $stm2->execute();
         $productos = $stm2->fetchAll(PDO::FETCH_ASSOC);
         echo "Total: " . count($productos) . "<br><br>";
@@ -834,26 +836,30 @@ class Search
             return null;
         }
     }
+
+    public function getLastID(){
+        $query = "SELECT MAX(ID) as ultimo FROM wp_pwgb_posts";
+        $pdo = $this->db->prepare($query);
+        $pdo->execute();
+        $result = $pdo->fetchAll();
+        return $result[0]['ultimo'];
+    }
+
 }
 
-$s = new Search();
-//$s->init($argv[1], $argv[2], $argv[3]);
-$s->all();
-//print_r($s->searchOnRadioShack("MICROCOMPONENTE LG CM2460", "LG CM2460"));
-//print_r($s->searchOnCyberPuerta("Monitor Gamer LG 24MP59G-P LED 23.8", "LG 24MP59G"));
-//print_r($s->searchOnWalmart("Barra de Sonido Curva Samsung 2.1 Canales HW-J6000R", "HW-J6000R/ZX"));
-//print_r($s->searchOnLiverpool("Smartphone Samsung S8 5.8 pulgadas Negro AT&T", "S8"));
-//print_r($s->searchOnOfficeMax("Desktop Lenovo AIO 510 23.5 8GB 1TB Core i5 Blanco", "Lenovo AIO 510"));
-//print_r($s->searchOnOfficeDepot("Desktop Lenovo AIO 510 23.5 8GB 1TB Core i5 Blanco", "Lenovo AIO 510"));
-//print_r($s->searchOnPalacio("Desktop Lenovo AIO 510 23.5 8GB 1TB Core i5 Blanco", "Lenovo AIO 510"));
-//print_r($s->searchOnSoriana("Desktop Lenovo AIO 510 23.5 8GB 1TB Core i5 Blanco", "Lenovo AIO 510"));
-//print_r($s->searchOnElektra("Desktop Lenovo AIO 510 23.5 8GB 1TB Core i5 Blanco", "Lenovo AIO 510"));
-//print_r($s->searchOnSony("Xperia™ XA1", "XA1"));
-//print_r($s->searchOnCostco("Samsung LED 49 Smart Tv FHD 60MR", "FHD 60MR"));
-//print_r($s->searchOnSears("Celular Samsung A320 A3 17", "a320"));
-//print_r($s->searchOnSears("Celular Samsung A320 A3 17", "a320"));
-//print_r($s->searchOnCoppel("AT&T Samsung S8 Plus Negro", "S8"));
-//print_r($s->searchOnClaroShop("Samsung Sm-G955F 64Gb Color Negro Galaxy S8 Plus", "S8"));
-//print_r($s->searchOnSanborns("Samsung Sm-G955F 64Gb Color Negro Galaxy S8 Plus", "S8")); // TODO
-//print_r($s->searchOnBestBuy("ACER - LAPTOP PREDATOR G9-593-78QJ DE 15.6", "ACER G9-593-78QJ"));
-//print_r($s->searchOnLinio("Samsung Galaxy S8+ Dual Sim 64GB", "S8"));
+
+if (isset($_POST['post'])) {
+    $post = $_POST['post'];
+    $search = new Search();
+    switch ($post) {
+        case 'ultimoId':
+            echo $search->getLastID();
+            break;
+        case 'all':
+            $search->all($_POST['inicio'] , $_POST['fin']);
+            break;
+        default:
+            header("Location: 404.php");
+            break;
+    }
+}
