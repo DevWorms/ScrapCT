@@ -1,4 +1,4 @@
-var respiro = (2 * 60 * 1000);
+var respiro =  (2 * 60 * 1000);
 var inicio = 1;
 var fin = 0;
 var ultimoId = 0;
@@ -67,25 +67,24 @@ function getLastId(){
         },complete:function(){
             $("#segundo_scrap").slideDown(500);
             $("#primer_scrap").attr('disabled', 'true');
-            obtenerURL();
         }
     });
 }
 
 function getIntervalos(){
     var intervalos = new Array();
-    fin = 50;
+    fin = 2;
     var intervalo = null;
 
     while(fin <= ultimoId){
         intervalo = {"inicio" : inicio , "fin" : fin};
         intervalos.push(intervalo);
         inicio = fin;
-        fin = fin + 50 ;
+        fin = fin + 2 ;
     }
 
     if(fin > ultimoId){
-        fin = fin -50;
+        fin = fin -2;
     }
 
     if(fin < ultimoId){
@@ -99,6 +98,7 @@ function getIntervalos(){
 
 
 function getURLs(){
+    $("#segundo_scrap").html("Obteniendo URL's de productos " + "<img src='img/loading.gif' width='40' height='40'><br><br>");
     var intervalos = getIntervalos();
     totalIntervalos = intervalos.length - 1;
     $.ajax({
@@ -107,22 +107,24 @@ function getURLs(){
         data: {'post': 'all' , 'inicio' : intervalos[indice].inicio , 'fin' : intervalos[indice].fin},
         dataType: 'html',
         success: function(response) {
+            printConsola(intervalos[indice].inicio + " , " + intervalos[indice].fin);
             indice = indice + 1;
             printConsola(response);
         },
         error: function(error) {
             printConsola("<span style='color:red'>" + error + "</span>");
         },complete:function(){
-            $("#segundo_scrap").attr('disabled', 'true');
             if(indice <= totalIntervalos){
                 setTimeout(function(){
                     getURLs();
                 },respiro);
-                
             }else{
-                indice = 0;
+                $("#segundo_scrap").html("Completado");
                 $("#tercer_scrap").slideDown(500);
                 printConsola("Url's de productos obtenidos");
+                indice = 0;
+                inicio = 1;
+                fin = 0;
             }
         }
 
@@ -132,6 +134,7 @@ function getURLs(){
 
 
 function ejecutarScraping(){
+    $("#tercer_scrap").html("Ejecutando proceso de scraping ..." + "<img src='img/loading.gif' width='40' height='40'><br>");
     var intervalos = getIntervalos();
     totalIntervalos = intervalos.length - 1;
     $.ajax({
@@ -140,20 +143,23 @@ function ejecutarScraping(){
         data: {'post': 'init' , 'inicio' : intervalos[indice].inicio , 'fin' : intervalos[indice].fin},
         dataType: 'html',
         success: function(response) {
+            printConsola(intervalos[indice].inicio + " , " + intervalos[indice].fin);
             indice = indice + 1;
             printConsola(response);
         },
         error: function(error) {
             printConsola("<span style='color:red'>" + error + "</span>");
         },complete:function(){
-            $("#segundo_scrap").attr('disabled', 'true');
+            $("#tercer_scrap").attr('disabled', 'true');
             if(indice <= totalIntervalos){
                 setTimeout(function(){
                     ejecutarScraping();
                 },respiro);
-                
             }else{
+                $("#tercer_scrap").html("Completado");
                 indice = 0;
+                inicio = 1;
+                fin = 0;
                 $("#cuarto_scrap").html("Termino el proceso del Scraping");
                 printConsola("Proceso de scraping finalizado");
             }
