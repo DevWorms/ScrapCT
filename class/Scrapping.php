@@ -78,7 +78,8 @@ class Scrapping
         echo "<div style='color:blue;'>Actualizando " . $hasta . " de " . $total . " articulos.</div><br><br>";
         $contador = 1;
         foreach ($response as $review) {
-            echo "<div style='color: blue'>" . $contador . " de " . count($response) . " Producto: " . $review["post_title"] . "</div><br>";
+            $porcentaje = ($contador * 100) / count($response);
+            echo "<div style='color: blue'>" . $contador . " de " . count($response) . " - " . $porcentaje. "% Producto: " . $review["post_title"] . "</div><br>";
             // Obtiene los metadatos del producto
             $metadata = $this->getMetaData($review["ID"]);
 
