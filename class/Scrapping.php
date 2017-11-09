@@ -1127,6 +1127,25 @@ class Scrapping
         return $result[0]['ultimo'];
     }
 
+    public function ids() {
+        $query = "SELECT ID FROM wp_pwgb_posts WHERE post_type = 'reviews' 
+                    AND post_status = 'publish';";
+        
+        $stm = $this->db->prepare($query);
+        $stm->execute();
+        $response = $stm->fetchAll(PDO::FETCH_ASSOC);
+
+        $i = 0;
+        foreach ($response as $id) {
+            //print_r($id);
+            echo $id["ID"] . ", ";
+            $i++;
+            if ($i%50 == 0) {
+                echo "<br><br>";
+            }
+        }
+    }
+
 }
 
 if (isset($_POST['post'])) {
@@ -1144,3 +1163,6 @@ if (isset($_POST['post'])) {
             break;
     }
 }
+
+$scrap = new Scrapping();
+$scrap->ids();
