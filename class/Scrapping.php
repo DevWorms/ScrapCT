@@ -143,7 +143,7 @@ class Scrapping
         $query = "SELECT * FROM wp_pwgb_posts
                     WHERE post_type = 'reviews' 
                     AND post_status = 'publish'
-                    AND ID in (611, 610, 608, 599, 602, 604, 605, 603, 606, 595, 596, 597, 598, 607, 652, 651, 665, 666, 667, 668, 669, 670, 661, 662, 663, 664, 660, 658, 656, 657, 654, 655, 786, 795, 794, 800, 801, 798, 799, 797, 796, 811, 810, 809, 806, 807, 808, 804, 846, 793)"; // Modificar para Amazon
+                    AND ID in (59, 61, 62, 160, 170, 289, 292, 423, 578, 591, 586, 590, 588, 582, 583, 584, 587, 589, 571, 573, 575, 576, 579, 574, 594, 593, 601, 635, 636, 637, 638, 630, 633, 634, 631, 632, 625, 629, 628, 627, 626, 620, 621, 622, 617, 618, 623, 615, 616, 612)"; // Modificar para Amazon
 
         $stm3 = $this->db->prepare($query);
         $stm3->execute();
@@ -228,6 +228,12 @@ class Scrapping
                 break;
             case 'radioshack_pl':
                 return 'price_radioshack';
+                break;
+            case 'amazon_affiliate_link':
+                return 'price_amazon';
+                break;
+            case 'amazon_pl':
+                return 'price_amazon';
                 break;
             default:
                 return null;
@@ -314,11 +320,25 @@ class Scrapping
             case 'bestbuy_pl':
                 return $this->getBestBuyPrice($url);
                 break;
-            case 'walmart_pl':
-                return $this->getWalMartPrice($url);
-                break;
             case 'liverpool_pl':
                 return $this->getLiverpoolPrice($url);
+                break;
+            case 'linio_pl':
+                return $this->getLinioPrice($url);
+                break;
+            case 'linio_affiliate_link':
+                return $this->getLinioPrice($url);
+                break;
+            case 'amazon_affiliate_link':
+                return $this->getAmazonPrice($url);
+                break;
+            case 'amazon_pl':
+                return $this->getAmazonPrice($url);
+                break;
+                
+
+            case 'walmart_pl':
+                return $this->getWalMartPrice($url);
                 break;
             case 'office_max_pl':
                 return $this->getOfficeMaxPrice($url);
@@ -343,18 +363,6 @@ class Scrapping
                 break;
             case 'radioshack_pl':
                 return $this->getRadioShackPrice($url);
-                break;
-            case 'linio_pl':
-                return $this->getLinioPrice($url);
-                break;
-            case 'linio_affiliate_link':
-                return $this->getLinioPrice($url);
-                break;
-            case 'amazon_affiliate_link':
-                return $this->getAmazonPrice($url);
-                break;
-            case 'amazon_pl':
-                return $this->getAmazonPrice($url);
                 break;
             default:
                 return null;
