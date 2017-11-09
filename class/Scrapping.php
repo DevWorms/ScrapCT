@@ -76,9 +76,9 @@ class Scrapping
      */
     public function getAllReviews($response, $hasta, $total) {
         echo "<div style='color:blue;'>Actualizando " . $hasta . " de " . $total . " articulos.</div><br><br>";
-
+        $contador = 1;
         foreach ($response as $review) {
-            echo "<div style='color: blue'>Producto: " . $review["post_title"] . "</div><br>";
+            echo "<div style='color: blue'>" . $contador . " de " . count($response) . " Producto: " . $review["post_title"] . "</div><br>";
             // Obtiene los metadatos del producto
             $metadata = $this->getMetaData($review["ID"]);
 
@@ -130,6 +130,8 @@ class Scrapping
 
             // ACtualiza el mejor precio y mejor tienda para del producto
             $this->setBestPrice($review["ID"]);
+
+            $contador += 1;
         }
 
         return $response;
