@@ -7,12 +7,6 @@
 		  			Tiendas
 		  		</a>
 		  	</li>
-		  	<li>
-		  		<a href="#">
-		  			<img src="img/ic_historial.png">
-		  			Historial de precios
-		  		</a>
-		  	</li>
 		    <li>
 		    	<a href="amazon">
 		    		<img src="img/ic_amazon.png">
@@ -35,6 +29,13 @@
 		    	<a href="obtener-excel">
 		    		<img src="img/ic_excel.png">
 		    		Obtener Excel
+
+		    	</a>
+		    </li>
+		    <li>
+		    	<a href="custom-post">
+		    		<img src="img/form.png">
+		    		Custom Post
 		    	</a>
 		    </li>
 		  </ul>

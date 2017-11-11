@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../app/DB.php';
-error_reporting(E_ALL);
+error_reporting(0);
 
 /**
  * Clase para la conexion con el api de Amazon
