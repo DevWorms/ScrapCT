@@ -134,7 +134,11 @@ class AmazonConnection
         try {
             $producto = (strlen($producto) > 200) ? substr($producto, 0, 196) . "..." : $producto;
             $slug = $this->slugify($producto);
-            $guid = "http://www.tec-check.com.mx/reviews/" . $slug;
+            $slugFabricante = $this->slugify($fabricante);
+            $slugModelo = $this->slugify($modelo);
+            $toLink = $slugFabricante . "-" . $slugModelo;
+
+            $guid = "http://www.tec-check.com.mx/reviews/" . $toLink;
             $query = "INSERT INTO wp_pwgb_posts (post_author, post_date, post_date_gmt, post_content, post_title,post_excerpt, post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_content_filtered, post_parent, guid, menu_order, post_type, post_mime_type, comment_count) VALUES (8, NOW(), NOW(), :descripcion, :producto, '', 'publish', 'open', 'open', '', :slug, '', '', NOW(), NOW(), '', '0', :guid, '0', 'reviews', '', '0')";
             $pdo = $this->db->prepare($query);
             $pdo->bindValue(":descripcion", $descripcion, PDO::PARAM_STR);
