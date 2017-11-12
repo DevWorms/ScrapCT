@@ -9,6 +9,9 @@ html,body,.main-container {
     overflow-x: hidden;
 }
 
+.lista_amazon{
+	list-style: none;
+}
 .card{
 	box-shadow: 5px 5px 2px #0068b9;
 	border-radius: 2%;

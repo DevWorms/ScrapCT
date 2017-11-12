@@ -1,7 +1,8 @@
+
 var respiro =  (2 * 60 * 1000);
-var inicio = 1;
+var inicio = 0;
 var fin = 0;
-var ultimoId = 0;
+var cuantosProductos = 0;
 var totalIntervalos = 0;
 var indice = 0;
 function printConsola(texto){
@@ -40,7 +41,7 @@ function iniciarProceso(){
     });
 
     $( "#modal-avisoScrap").dialog('open');
-    getLastId();
+    getCuantosByCategoria();
 
 }
 
@@ -52,43 +53,47 @@ function setProgreso(progreso) {
 }
 
 
-function getLastId(){
-    $.ajax({
-        url: 'class/Search.php',
-        type: 'POST',
-        data: {'post': 'ultimoId' },
-        dataType: 'html',
-        success: function(response) {
-            ultimoId = response;
-            printConsola("Ultimo ID obtenido " + response);
-        },
-        error: function(error) {
-            printConsola("<span style='color:red'>" + error + "</span>");
-        },complete:function(){
-            $("#segundo_scrap").slideDown(500);
-            $("#primer_scrap").attr('disabled', 'true');
-        }
-    });
+function getCuantosByCategoria(){
+    var categoria = $("#categoria").val();
+    if(categoria != ""){
+        $.ajax({
+            url: 'class/Search.php',
+            type: 'POST',
+            data: {'post': 'getCuantosByCategoria', 'id' : categoria },
+            dataType: 'html',
+            success: function(response) {
+                cuantosProductos = response;
+                printConsola("Cantidad de productos para esta categoria " + response);
+            },
+            error: function(error) {
+                printConsola("<span style='color:red'>" + error + "</span>");
+            },complete:function(){
+                $("#segundo_scrap").slideDown(500);
+                $("#primer_scrap").attr('disabled', 'true');
+            }
+        });
+    }
+    
 }
 
 function getIntervalos(){
     var intervalos = new Array();
-    fin = 2;
+    fin = 35;
     var intervalo = null;
 
-    while(fin <= ultimoId){
+    while(fin <= cuantosProductos){
         intervalo = {"inicio" : inicio , "fin" : fin};
         intervalos.push(intervalo);
         inicio = fin;
-        fin = fin + 2 ;
+        fin = fin + 35 ;
     }
 
-    if(fin > ultimoId){
-        fin = fin -2;
+    if(fin > cuantosProductos){
+        fin = fin -35;
     }
 
-    if(fin < ultimoId){
-        intervalo = {"inicio" : fin , "fin" : ultimoId};
+    if(fin < cuantosProductos){
+        intervalo = {"inicio" : fin , "fin" : cuantosProductos};
         intervalos.push(intervalo);
     }
 
@@ -101,10 +106,12 @@ function getURLs(){
     $("#segundo_scrap").html("Obteniendo URL's de productos " + "<img src='img/loading.gif' width='40' height='40'><br><br>");
     var intervalos = getIntervalos();
     totalIntervalos = intervalos.length - 1;
+    var categoria = $("#categoria").val();
+    var tienda = $("#tiendas").val();
     $.ajax({
         url: 'class/Search.php',
         type: 'POST',
-        data: {'post': 'all' , 'inicio' : intervalos[indice].inicio , 'fin' : intervalos[indice].fin},
+        data: {'post': 'all' , 'inicio' : intervalos[indice].inicio , 'fin' : intervalos[indice].fin , 'categoria' : categoria, 'tienda' : tienda },
         dataType: 'html',
         success: function(response) {
             printConsola(intervalos[indice].inicio + " , " + intervalos[indice].fin);
@@ -120,10 +127,9 @@ function getURLs(){
                 },respiro);
             }else{
                 $("#segundo_scrap").html("Completado");
-                $("#tercer_scrap").slideDown(500);
                 printConsola("Url's de productos obtenidos");
                 indice = 0;
-                inicio = 1;
+                inicio = 0;
                 fin = 0;
             }
         }
@@ -133,7 +139,7 @@ function getURLs(){
 }
 
 
-function ejecutarScraping(){
+/*function ejecutarScraping(){
     $("#tercer_scrap").html("Ejecutando proceso de scraping ..." + "<img src='img/loading.gif' width='40' height='40'><br>");
     var intervalos = getIntervalos();
     totalIntervalos = intervalos.length - 1;
@@ -166,4 +172,38 @@ function ejecutarScraping(){
         }
 
     });
+}*/
+
+function getCategorias(){
+    $.ajax({
+        url: 'class/Search.php',
+        type: 'POST',
+        data: {'post': 'getCategorias' },
+        dataType: 'json',
+        beforeSend: function() {
+            showProgress();
+        },
+        success: function(response) {
+            if (response.estado == 1) {
+                var categorias = response.categorias;
+                var options = "<option>Elige una categoria</optiom>";
+                for (var i = categorias.length - 1; i >= 0; i--) {
+                    options += "<option value='" + categorias[i].term_taxonomy_id+ "'>"+categorias[i].name+"</option>";
+                }
+
+                $("#categoria").html(options);
+            }
+        },
+        error: function(error) {
+            $.notify("Ocurrio un error", "error")
+            hideProgress();
+        },
+        complete: function() {
+            hideProgress();
+        }
+    });
 }
+
+$(document).ready(function() {
+    getCategorias();
+});

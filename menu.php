@@ -22,7 +22,7 @@
 		    <li>
 		    	<a href="scrapping">
 		    		<img src="img/ic_scrapping.png">
-		    		Scraping
+		    		Scraping URL's
 		    	</a>
 		    </li>
 		    <li>

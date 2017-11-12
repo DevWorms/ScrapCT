@@ -23,10 +23,29 @@ include 'header.php';
     ?>
 
     <div class="col-md-9 box-container cuerpo">
-        <h3>Actualizar precios<br><br></h3>
+        <h3>Obtener URL's<br><br></h3>
         <div class="row">
             <div class="col-md-12" align="center">
-                <ol class="lista_amazon">
+                <ul class="lista_amazon">
+                    <li>
+                        <select class="form-control" id="tiendas" name="tiendas"  style="width: 50%">
+                            <?php 
+                                $tiendas =['sanborns_pl','linio_pl','amazon_pl','claroshop_pl','coppel_pl','sears_pl','sams_pl','bestbuy_pl','walmart_pl','amazon_affiliate_link','linio_affiliate_link','liverpool_pl','office_max_pl','office_depot_pl','palacio_pl','soriana_pl','elektra_pl','sony_pl','costco_pl','radioshack_pl'];
+
+                                echo "<option value=''>Elige una tienda</option>";
+                                foreach ($tiendas as $value) {
+                                    echo "<option value='".$value."'>".$value."</option>";
+                                }
+                             ?>
+                        </select>
+                        <br>
+                    </li>
+                    <li>
+                        <select class="form-control" id="categoria" name="categoria"  style="width: 50%">
+                            <option>Elige una categoria</option>
+                        </select>
+                        <br>
+                    </li>
                     <li id="primer_scrap">
                         <button class="btn btn-info" onclick="iniciarProceso();">
                             Iniciar
@@ -39,14 +58,8 @@ include 'header.php';
                         </button>
                         <br><br>
                     </li>
-                    <li id="tercer_scrap" style="display: none;">
-                        <button class="btn btn-primary" onclick="ejecutarScraping();">
-                            Ejecutar Scraping
-                        </button>
-                        <br><br>
-                    </li>
-                    <li id="cuarto_scrap"></li>
-                </ol>
+                    <li id="cuarto_scrap" style="display: none"></li>
+                </ul>
                 <div class="bar_fondo" style="display: none">
                     <div id="bar_scrapping" class="bar_liquid">
                         0
