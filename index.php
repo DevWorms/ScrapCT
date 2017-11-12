@@ -12,5 +12,6 @@ $route->add('/amazon', 'amazon.php');
 $route->add('/obtener-excel', 'excel.php');
 $route->add('/scrapping', 'scrapping.php');
 $route->add('/custom-post', 'custom-post.php');
+$route->add('/precios', 'scrapng-precios.php');
 
 $route->submit();

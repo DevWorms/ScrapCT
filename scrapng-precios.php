@@ -23,23 +23,23 @@ include 'header.php';
     ?>
 
     <div class="col-md-9 box-container cuerpo">
-        <h3>Obtener URL's<br><br></h3>
+        <h3>Scraping Precio's<br><br></h3>
         <div class="row">
             <div class="col-md-12" align="center">
                 <ul class="lista_amazon">
-                    <li>
+                    <!--<li>
                         <select class="form-control" id="tiendas" name="tiendas"  style="width: 50%">
                             <?php 
-                                $tiendas =['sanborns_pl','linio_pl','amazon_pl','claroshop_pl','coppel_pl','sears_pl','sams_pl','bestbuy_pl','walmart_pl','amazon_affiliate_link','linio_affiliate_link','liverpool_pl','office_max_pl','office_depot_pl','palacio_pl','soriana_pl','elektra_pl','sony_pl','costco_pl','radioshack_pl'];
+                                /*$tiendas =['sanborns_pl','linio_pl','amazon_pl','claroshop_pl','coppel_pl','sears_pl','sams_pl','bestbuy_pl','walmart_pl','amazon_affiliate_link','linio_affiliate_link','liverpool_pl','office_max_pl','office_depot_pl','palacio_pl','soriana_pl','elektra_pl','sony_pl','costco_pl','radioshack_pl'];
 
                                 echo "<option value=''>Elige una tienda</option>";
                                 foreach ($tiendas as $value) {
                                     echo "<option value='".$value."'>".$value."</option>";
-                                }
+                                }*/
                              ?>
                         </select>
                         <br>
-                    </li>
+                    </li>-->
                     <li>
                         <select class="form-control" id="categoria" name="categoria"  style="width: 50%">
                             <option>Elige una categoria</option>
@@ -53,13 +53,13 @@ include 'header.php';
                         <br><br>
                     </li>
                     <li id="segundo_scrap" style="display: none;">
-                        <button class="btn btn-success" onclick="getURLs();">
-                            Obtener URL de productos
+                        <button class="btn btn-success" onclick="getPrecios();">
+                            Actualizar precio de productos
                         </button>
                         <br><br>
                     </li>
                     <li id="tercer_scrap" style="display: none">
-                        <a href="scrapping" class="btn btn-info">Finalizar</a>
+                        <a href="precios" class="btn btn-info">Finalizar</a>
                     </li>
                 </ul>
                 <div class="bar_fondo" style="display: none">
@@ -87,10 +87,10 @@ include 'header.php';
     </div>
 </div>
 
-<script type="text/javascript" src="<?php echo app_url(); ?>js/scrapping.js"></script>
+<script type="text/javascript" src="<?php echo app_url(); ?>js/scraping-precios.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
-        $("a[href=scrapping]").addClass("menu-activo");
+        $("a[href=precios]").addClass("menu-activo");
     });
 </script>
 </body>

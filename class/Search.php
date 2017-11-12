@@ -82,7 +82,6 @@ class Search
                 case 'bestbuy_pl':
                     $result = $this->searchOnBestBuy($name, $model);
                     if ($result) {
-                        echo "ENTRO : $shop $post_id ". $result['url'] ."<br>";
                         $this->saveProducto($shop, $post_id, $result['url']);
                     }
                     break;

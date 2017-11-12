@@ -102,16 +102,17 @@ function getIntervalos(){
 }
 
 
-function getURLs(){
-    $("#segundo_scrap").html("Obteniendo URL's de productos " + "<img src='img/loading.gif' width='40' height='40'><br><br>");
+function getPrecios(){
+    $("#segundo_scrap").html("Ejecutando scraping en precios " + "<img src='img/loading.gif' width='40' height='40'><br><br>");
     var intervalos = getIntervalos();
     totalIntervalos = intervalos.length - 1;
     var categoria = $("#categoria").val();
-    var tienda = $("#tiendas").val();
+    var tienda = '0';
+    var datos = 'prueba=precios' + '&inicio='+  intervalos[indice].inicio + '&fin='+ intervalos[indice].fin + '&categoria=' + categoria;
     $.ajax({
-        url: 'class/Search.php',
+        url: 'class/Scrapping.php',
         type: 'POST',
-        data: {'post': 'all' , 'inicio' : intervalos[indice].inicio , 'fin' : intervalos[indice].fin , 'categoria' : categoria, 'tienda' : tienda },
+        data: datos,
         dataType: 'html',
         success: function(response) {
             printConsola(intervalos[indice].inicio + " , " + intervalos[indice].fin);
@@ -123,12 +124,12 @@ function getURLs(){
         },complete:function(){
             if(indice <= totalIntervalos){
                 setTimeout(function(){
-                    getURLs();
+                    getPrecios();
                 },respiro);
             }else{
                 $("#segundo_scrap").html("Completado");
                 $("#tercer_scrap").slideDown(500);
-                printConsola("Url's de productos obtenidos");
+                printConsola("Precios actualizados");
                 indice = 0;
                 inicio = 0;
                 fin = 0;
@@ -140,40 +141,7 @@ function getURLs(){
 }
 
 
-/*function ejecutarScraping(){
-    $("#tercer_scrap").html("Ejecutando proceso de scraping ..." + "<img src='img/loading.gif' width='40' height='40'><br>");
-    var intervalos = getIntervalos();
-    totalIntervalos = intervalos.length - 1;
-    $.ajax({
-        url: 'class/Scrapping.php',
-        type: 'POST',
-        data: {'post': 'init' , 'inicio' : intervalos[indice].inicio , 'fin' : intervalos[indice].fin},
-        dataType: 'html',
-        success: function(response) {
-            printConsola(intervalos[indice].inicio + " , " + intervalos[indice].fin);
-            indice = indice + 1;
-            printConsola(response);
-        },
-        error: function(error) {
-            printConsola("<span style='color:red'>" + error + "</span>");
-        },complete:function(){
-            $("#tercer_scrap").attr('disabled', 'true');
-            if(indice <= totalIntervalos){
-                setTimeout(function(){
-                    ejecutarScraping();
-                },respiro);
-            }else{
-                $("#tercer_scrap").html("Completado");
-                indice = 0;
-                inicio = 1;
-                fin = 0;
-                $("#cuarto_scrap").html("Termino el proceso del Scraping");
-                printConsola("Proceso de scraping finalizado");
-            }
-        }
 
-    });
-}*/
 
 function getCategorias(){
     $.ajax({

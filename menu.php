@@ -1,12 +1,6 @@
 <div class="col-md-3 menu colorSecundario cuerpo">
 	<nav>
 		<ul>
-		  	<li>
-		  		<a href="tiendas">
-		  			<img src="img/ic_tienda.png">
-		  			Tiendas
-		  		</a>
-		  	</li>
 		    <li>
 		    	<a href="amazon">
 		    		<img src="img/ic_amazon.png">
@@ -23,6 +17,12 @@
 		    	<a href="scrapping">
 		    		<img src="img/ic_scrapping.png">
 		    		Scraping URL's
+		    	</a>
+		    </li>
+		    <li>
+		    	<a href="precios">
+		    		<img src="img/price-tag.png">
+		    		Scraping Precio's
 		    	</a>
 		    </li>
 		    <li>

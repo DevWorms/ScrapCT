@@ -23,7 +23,7 @@ function login(){
 				var contenido = "<p style='color:blue'><br>" + response.mensaje+ "<br> Iniciando ... </p>";
 				$("#confirmacion").html(contenido);
 				setTimeout(function(){
-					window.location.replace(APP_URL + "tiendas");
+					window.location.replace(APP_URL + "usuarios");
 				},2000);
 			}else{
 				var contenido = "<p style='color:red'><br>" + response.mensaje+ "*** </p>";
