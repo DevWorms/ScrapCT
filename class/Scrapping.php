@@ -74,7 +74,7 @@ class Scrapping
     /**
      * Obtiene todos los productos de la BD para hacer scrapping
      */
-    public function getAllReviews($response, $hasta, $total) {
+    public function getAllReviews($response, $hasta, $total,$shop) {
         echo "<div style='color:blue;'>Actualizando " . $hasta . " de " . $total . " articulos.</div><br><br>";
         $contador = 1;
         foreach ($response as $review) {
@@ -89,7 +89,8 @@ class Scrapping
 
             // Nombres de las columnas de las diferentes tiendas
             $links = $this->productsLink();
-            foreach ($links as $link) {
+            //foreach ($links as $link) {
+                $link = $shop;
                 foreach ($metadata as $mdata) {
                     // Valida que exista el precio de esa tienda en la BD
                     if (isset($mdata['meta_key']) && $mdata['meta_key'] == $link) {
@@ -126,7 +127,7 @@ class Scrapping
                         }
                     }
                 }
-            }
+            //}
             echo "<br><br>";
 
             // ACtualiza el mejor precio y mejor tienda para del producto
@@ -138,7 +139,7 @@ class Scrapping
         return $response;
     }
     
-    public function init($categoria,$hasta,$total) {
+    public function init($categoria,$hasta,$total,$shop) {
         $limites = " LIMIT " . $hasta . " , " . $total;
 
         $query = "SELECT p.* from  wp_pwgb_term_taxonomy as tx
@@ -153,7 +154,7 @@ class Scrapping
         $stm3->execute();
         $response = $stm3->fetchAll(PDO::FETCH_ASSOC);
 
-        $this->getAllReviews($response, $hasta, $total);
+        $this->getAllReviews($response, $hasta, $total,$shop);
     }
 
     public function updateScraping($current_position, $total) {
@@ -1166,7 +1167,7 @@ if (isset($_POST['prueba'])) {
     $s = new Scrapping();
     switch ($post) {
         case 'precios':
-            $s->init($_POST['categoria'],$_POST['inicio'] , $_POST['fin']);
+            $s->init($_POST['categoria'],$_POST['inicio'] , $_POST['fin'] , $_POST['shop']);
             break;
         default:
             echo "default";

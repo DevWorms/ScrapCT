@@ -27,19 +27,19 @@ include 'header.php';
         <div class="row">
             <div class="col-md-12" align="center">
                 <ul class="lista_amazon">
-                    <!--<li>
+                    <li>
                         <select class="form-control" id="tiendas" name="tiendas"  style="width: 50%">
                             <?php 
-                                /*$tiendas =['sanborns_pl','linio_pl','amazon_pl','claroshop_pl','coppel_pl','sears_pl','sams_pl','bestbuy_pl','walmart_pl','amazon_affiliate_link','linio_affiliate_link','liverpool_pl','office_max_pl','office_depot_pl','palacio_pl','soriana_pl','elektra_pl','sony_pl','costco_pl','radioshack_pl'];
+                                $tiendas =['sanborns_pl','linio_pl','amazon_pl','claroshop_pl','coppel_pl','sears_pl','sams_pl','bestbuy_pl','walmart_pl','amazon_affiliate_link','linio_affiliate_link','liverpool_pl','office_max_pl','office_depot_pl','palacio_pl','soriana_pl','elektra_pl','sony_pl','costco_pl','radioshack_pl'];
 
                                 echo "<option value=''>Elige una tienda</option>";
                                 foreach ($tiendas as $value) {
                                     echo "<option value='".$value."'>".$value."</option>";
-                                }*/
+                                }
                              ?>
                         </select>
                         <br>
-                    </li>-->
+                    </li>
                     <li>
                         <select class="form-control" id="categoria" name="categoria"  style="width: 50%">
                             <option>Elige una categoria</option>

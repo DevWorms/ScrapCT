@@ -107,8 +107,8 @@ function getPrecios(){
     var intervalos = getIntervalos();
     totalIntervalos = intervalos.length - 1;
     var categoria = $("#categoria").val();
-    var tienda = '0';
-    var datos = 'prueba=precios' + '&inicio='+  intervalos[indice].inicio + '&fin='+ intervalos[indice].fin + '&categoria=' + categoria;
+    var tienda = $("#tiendas").val();
+    var datos = 'prueba=precios' + '&inicio='+  intervalos[indice].inicio + '&fin='+ intervalos[indice].fin + '&categoria=' + categoria + "&shop="+tienda;
     $.ajax({
         url: 'class/Scrapping.php',
         type: 'POST',
