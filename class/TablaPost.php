@@ -32,32 +32,56 @@ class TablaPost
         <table>
 		  <tr>
 		    <th>ID</th>
+		    <th>Categoría</th>
 		    <th>Fabricante</th>
 		    <th>Modelo</th>
 		    <th>Producto</th>
 		    <th>ASIN</th>
 		    <th>Img_URL</th>
-		    <th>Affiliate</th>
+		    <th>Affiliate Amazon</th>
+		    <th>Affiliate Best Buy</th>
+		    <th>Affiliate Linio</th>
 		  </tr>
 		';
 
         foreach ($productos as $producto) {
+        	$categoria = $this->categoria($producto['post_id']);
         	$company = $this->company($producto['post_id']);
         	$model = $this->model($producto['post_id']);
         	$asin = $this->asin($producto['post_id']);
-        	$img = $this->model($producto['post_id']);
-        	$affiliate = $this->model($producto['post_id']);
+        	$img = $this->img($producto['post_id']);
+        	$affiliateAmazon = $this->affiliateAmazon($producto['post_id']);
+        	$affiliateBestBuy = $this->affiliateBestBuy($producto['post_id']);
+        	$affiliateLinio = $this->affiliateLinio($producto['post_id']);
         	echo 
 
         	'<tr><td>' . $producto['post_id'] . "</td>" .
+        	'<td>' . $categoria['name'] . "</td>" . 
         	'<td>' . $company['meta_value'] . "</td>" . 
         	'<td>' . $model['meta_value'] . "</td>" .
+        	'<td>' . $company['meta_value'] . ' ' . $model['meta_value'] . "</td>" .
         	'<td>' . $asin['meta_value'] . "</td>" .
         	'<td>' . $img['meta_value'] . "</td>" .
-        	'<td>' . $affiliate['meta_value'] . "</td></tr>";
+        	'<td>' . $affiliateAmazon['meta_value'] . "</td>" .
+        	'<td>' . $affiliateBestBuy['meta_value'] . "</td>" .
+        	'<td>' . $affiliateLinio['meta_value'] . "</td></tr>";
         }
 
         echo '</table>';
+    }
+
+    public function categoria($id){
+    	$query = "SELECT terms.name FROM (
+					(wp_pwgb_terms AS terms INNER JOIN wp_pwgb_term_taxonomy AS taxo ON terms.term_id = taxo.term_id)
+    				INNER JOIN wp_pwgb_term_relationships AS relations ON taxo.term_taxonomy_id = relations.term_taxonomy_id)
+					WHERE taxo.taxonomy = 'category' AND relations.object_id = :post_id";
+    	$pdo = $this->db->prepare($query);
+        $pdo->bindValue(":post_id", $id, PDO::PARAM_INT);
+    	$pdo->execute();	
+
+    	$categoria = $pdo->fetch(PDO::FETCH_ASSOC);
+
+    	return $categoria;
     }
 
     public function company($id){
@@ -104,15 +128,37 @@ class TablaPost
     	return $img;
     }
 
-    public function affiliate($id){
-    	$query = "SELECT meta_value FROM `wp_pwgb_postmeta` WHERE meta_key LIKE '%affiliate%' AND post_id = :post_id AND meta_value NOT LIKE 'field%'";
+    public function affiliateAmazon($id){
+    	$query = "SELECT meta_value FROM `wp_pwgb_postmeta` WHERE meta_key LIKE 'amazon_affiliate_link' AND post_id = :post_id";
     	$pdo = $this->db->prepare($query);
         $pdo->bindValue(":post_id", $id, PDO::PARAM_INT);
     	$pdo->execute();	
 
-    	$affiliate = $pdo->fetch(PDO::FETCH_ASSOC);
+    	$affiliateAmazon = $pdo->fetch(PDO::FETCH_ASSOC);
 
-    	return $affiliate;
+    	return $affiliateAmazon;
+    }
+
+    public function affiliateBestBuy($id){
+    	$query = "SELECT meta_value FROM `wp_pwgb_postmeta` WHERE meta_key LIKE 'bestbuy_affiliate_link' AND post_id = :post_id";
+    	$pdo = $this->db->prepare($query);
+        $pdo->bindValue(":post_id", $id, PDO::PARAM_INT);
+    	$pdo->execute();	
+
+    	$affiliateBestBuy = $pdo->fetch(PDO::FETCH_ASSOC);
+
+    	return $affiliateBestBuy;
+    }
+
+    public function affiliateLinio($id){
+    	$query = "SELECT meta_value FROM `wp_pwgb_postmeta` WHERE meta_key LIKE 'linio_affiliate_link' AND post_id = :post_id";
+    	$pdo = $this->db->prepare($query);
+        $pdo->bindValue(":post_id", $id, PDO::PARAM_INT);
+    	$pdo->execute();	
+
+    	$affiliateLinio = $pdo->fetch(PDO::FETCH_ASSOC);
+
+    	return $affiliateLinio;
     }
 }
 
