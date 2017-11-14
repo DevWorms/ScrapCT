@@ -40,10 +40,32 @@
 							<br><br>
 						</li>
 						<li style="display: none" id="tercero_amazon">
-							<button class="btn btn-success" onclick="ejecutarProceso();">
-								Ejecutar proceso Amazon
-							</button>
-							<br><br>
+							<div class="row">
+								<div class="col-md-6">
+									Ejecutar por categoria y pagina
+									<select class="form-control" id="categoria" name="categoria" >
+			                            <option value=''>Elige una categoria</option>
+			                        </select>
+			                        <br>
+			                        <select class="form-control" id="pagina" name="pagina" >
+			                            <option value=''>Elige una pagina</option>
+			                            <?php 
+			                            	for ($i=1 ; $i<=10 ; $i++) {
+			                            		echo "<option value='$i'>$i</option>";
+			                            	}
+			                             ?>
+		                             	<option value="todas">Todas las paginas</option>
+			                        </select>
+			                        <br>
+			                        <button class="btn btn-success" onclick="getProductosByFiltros()">Ejecutar</button>
+								</div>
+								<div class="col-md-6">
+									<br>
+									<button class="btn btn-info" onclick="ejecutarProceso();">
+										Ejecutar proceso Amazon Completo
+									</button>
+								</div>
+							</div>
 						</li>
 						<li style="display: none;" id="cuarto_amazon">
 							<h4 id='antes_bd'>Productos previos en la base de daos 4500</h4>
@@ -66,8 +88,14 @@
 					<label for="consola_amazon">
 						<b>Consola</b> 
 					</label>
-					<div id="consola_amazon" name="consola_amazon" class="form-control consola"></div>	
+					<div id="consola_amazon" name="consola_amazon" class="form-control consola" style="font-size: 90%"></div>
+					<br><br>
+					<button class="btn btn-default" onclick="limpiarConsola()" style="float: right;">
+						Limpiar consola 
+						<img src="img/paintbrush.png">
+					</button>
 				</div>
+				
 			</div>
 			<?php include 'footer.php' ?>
 		</div>

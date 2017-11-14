@@ -5,6 +5,7 @@ var veces = 20;
 var respiro = (2 * 60 * 1000);
 
 function printConsola(texto){
+    console.log("texto - > " + texto)
 	var previo = "";
 	if($("#consola_amazon").html()){
 		previo = $("#consola_amazon").html();
@@ -63,7 +64,8 @@ function obtenerCategorias(){
         	$("#primer_amazon").slideUp(500);
         	// mostramos el ultimo paso
         	$("#tercero_amazon").slideDown(1000);
-        	infoBefore();
+        	
+            getCategorias();
         }
     });
 }
@@ -149,4 +151,70 @@ function infoAfter(){
         	printConsola("<span style='color:red'>" + error + "</span>");
         }
     });
+}
+
+function getCategorias(){
+    $.ajax({
+        url: 'class/AmazonConnection.php',
+        type: 'POST',
+        data: {'post': 'getCategorias' },
+        dataType: 'json',
+        beforeSend: function() {
+            showProgress();
+        },
+        success: function(response) {
+            if (response.estado == 1) {
+                var categorias = response.categorias;
+                var options = "<option>Elige una categoria</optiom>";
+                for (var i = categorias.length - 1; i >= 0; i--) {
+                    options += "<option value='" + categorias[i].browse_node_amazon+ "'>"+categorias[i].name+"</option>";
+                }
+
+                $("#categoria").html(options);
+            }
+        },
+        error: function(error) {
+            $.notify("Ocurrio un error", "error")
+            hideProgress();
+        },
+        complete: function() {
+            infoBefore();
+            hideProgress();
+        }
+    });
+}
+
+function getProductosByFiltros(){
+    var categoria = $('#categoria').val();
+    var pagina = $('#pagina').val();
+    if(categoria != "" && pagina != ""){
+        $.ajax({
+            url: 'class/AmazonConnection.php',
+            type: 'POST',
+            data: {'post': 'getProductosByFiltros' , 'nodo' : categoria , 'pagina' : pagina},
+            dataType: 'html',
+            beforeSend: function() {
+                showProgress();
+            },
+            success: function(datos) {
+                printConsola(datos);
+                hideProgress();
+            },
+            error: function(error) {
+                $.notify("Ocurrio un error", "error")
+                hideProgress();
+            },
+            complete: function() {
+                infoAfter();
+                $("#cuarto_amazon").slideDown(1000);
+            }
+        });
+    }else{
+        $.notify("Elige una opcion de pagina y categoria", "warn");
+    }
+    
+}
+
+function limpiarConsola(){
+    $("#consola_amazon").html("");
 }

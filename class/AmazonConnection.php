@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../app/DB.php';
-error_reporting(0);
+error_reporting(E_ALL);
 
 /**
  * Clase para la conexion con el api de Amazon
@@ -530,7 +530,7 @@ class AmazonConnection
             $sentencia->execute();
         }
 
-        echo "<br> consola > <b>Completado, <span style='color:blue'>Oprime Ejecutar proceso Amazon</span>...</b>";
+        echo "<br> consola > <b>Completado, <span style='color:blue'>Selecciona un proceso</span>...</b>";
     }
 
     /**
@@ -571,7 +571,7 @@ class AmazonConnection
                         $actualizados = 0;
                         foreach ($items as $item) {
                             // el nombre es el atrivuto title
-                            $producto = $item->ItemAttributes->Title;
+                            //$producto = $item->ItemAttributes->Title;
                             // si el precio nuevo desde existe
                             if (isset($item->OfferSummary->LowestNewPrice->Amount)) {
                                 $precio = ($item->OfferSummary->LowestNewPrice->Amount / 100);
@@ -616,7 +616,8 @@ class AmazonConnection
                             } else {
                                 // si no existe es un producto nuevo y se isnerta con toda su informacion
                                 $nuevos++;
-                                $this->insertProduct($producto, $precio, $asin, $link, $descripcion, $modelo, $fabricante, $img_url, $datos_tecnicos, $nodo);
+                                $nombre = $fabricante . " " .$modelo;
+                                $this->insertProduct($nombre, $precio, $asin, $link, $descripcion, $modelo, $fabricante, $img_url, $datos_tecnicos, $nodo);
                             }
 
                         }
@@ -798,6 +799,112 @@ class AmazonConnection
         return $response[0]['term_taxonomy_id'];
     }
 
+    public function getCategorias(){
+        $respuesta = ['estado' => 0, 'mensaje' => ''];
+        
+        $query = "SELECT * FROM wp_pwgb_terms WHERE browse_node_amazon != '' ORDER BY name DESC";
+        $pdo = $this->db->prepare($query);
+        $pdo->execute();
+        $result = $pdo->fetchAll();
+        $respuesta['categorias'] = $result;
+        $respuesta['estado'] = 1;
+        $respuesta['mensaje'] = 'Categorias obtenidas';
+        return json_encode($respuesta);
+    }
+
+    /**
+     * Proceso de amazn simplificado a categoria especifica y pagina especifica
+     * @param  [type] $nodo   [description]
+     * @param  [type] $pagina [description]
+     * @return [type]         [description]
+     */
+    public function getProductosByFiltros($nodo, $pagina){
+        $pag_ini = 0;
+        $pag_fin = 0;
+        if($pagina == "todas"){
+            $pag_ini = 1;
+            $pag_fin = 10;
+        }else{
+            $pag_ini = $pagina;
+            $pag_fin = $pagina;
+        }
+
+         for ($pag = $pag_ini; $pag <= $pag_fin; $pag++) {
+            echo "<br> consola > <span style='color:blue'>Obteniendo productos del de la pagina $pag para el nodo $nodo...</span>";
+            $response = $this->itemSearch($nodo, $pag);
+            $response = $response['resultado'];
+            if ($response != null) {
+                if (isset($response->Item)) {
+                    $items = $response->Item;
+                    $nuevos = 0;
+                    $actualizados = 0;
+                    $preview = "<table class='table table-striped table-condensed'>";
+                    $preview .= "<thead><tr><th>Fabricante</th><th>Modelo</th><th>Nombre</th><th>ASIN</th><th>Precio</th><th>Affiliate link</th><th>Imagen url</th></tr></thead>";
+                    echo "<br> consola > Productos para pa la pagina $pag ";
+                    foreach ($items as $item) {
+
+                        if (isset($item->OfferSummary->LowestNewPrice->Amount)) {
+                            $precio = ($item->OfferSummary->LowestNewPrice->Amount / 100);
+                            $precio = floor($precio);
+                        } else if (isset($item->ItemAttributes->ListPrice->Amount)) {
+                            // si el no esta el precio mas bajo, entonces usamos el precio de lista
+                            $precio = ($item->ItemAttributes->ListPrice->Amount / 100);
+                            $precio = floor($precio);
+                        }
+                        $asin = $item->ASIN;
+                        $link = $item->DetailPageURL;
+                        $descripcion = $item->ItemAttributes->Feature;
+                        $modelo = $item->ItemAttributes->Model;
+                        $fabricante = $item->ItemAttributes->Manufacturer;
+                        $img_url = $item->LargeImage->URL;
+                        $atributos = (array)$item->ItemAttributes;
+                        unset($atributos['Binding']);
+                        unset($atributos['CatalogNumberList']);
+                        unset($atributos['EAN']);
+                        unset($atributos['EANList']);
+                        unset($atributos['Feature']);
+                        unset($atributos['Manufacturer']);
+                        unset($atributos['Model']);
+                        unset($atributos['Title']);
+                        unset($atributos['MPN']);
+                        unset($atributos['UPC']);
+                        unset($atributos['UPCList']);
+                        $datos_tecnicos = json_encode($atributos);
+                        $preview .= "<tr>";
+                        $preview .= "<td>$fabricante</td>";
+                        $preview .= "<td>$modelo</td>";
+                        $preview .= "<td>". $fabricante . " " .$modelo."</td>";
+                        $preview .= "<td>$asin</td>";
+                        $preview .= "<td>$precio</td>";
+                        $preview .= "<td>$link</td>";
+                        $preview .= "<td>$img_url</td>";
+                        
+                        $preview .= "</tr>";
+                        if ($this->exists($asin)) {
+                            if ($this->priceHasChanged($asin, $precio)) {
+                                $actualizados++;
+                                $this->updateAmazonPrice($asin, $precio);
+                            }
+
+                        } else {
+                            $nuevos++;
+                            $nombre = $fabricante . " " .$modelo;
+                            $this->insertProduct($nombre, $precio, $asin, $link, $descripcion, $modelo, $fabricante, $img_url, $datos_tecnicos, $nodo);
+                        }
+
+                    }
+                    $preview .= "</table>";
+                    echo $preview;
+                    echo "<br> consola > <span style='color:green'> $nuevos productons nuevos y $actualizados productos cambiaron de precio para le nodo $nodo</span>";
+                } else {
+                    echo "<br> consola > <span style='color:red'>No tenia items el nodo  $nodo...</span>";
+                }
+            } else {
+                echo "<br> consola > <span style='color:red'>No se pudieron obtener los productos para el $nodo...</span>";
+            }
+        }
+    }
+
 }
 
 if (isset($_POST['post'])) {
@@ -812,6 +919,12 @@ if (isset($_POST['post'])) {
             break;
         case 'infoAmazon':
             echo $amazon->infoAmazon();
+            break;
+        case 'getCategorias':
+            echo $amazon->getCategorias();
+            break;
+        case 'getProductosByFiltros':
+            $amazon->getProductosByFiltros($_POST['nodo'], $_POST['pagina']);
             break;
         default:
             header("Location: 404.php");

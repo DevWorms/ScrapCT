@@ -6,9 +6,11 @@
  * Time: 12:30 AM
  */
 define("DATABASE", "teccheck_wordpress");
-define("HOSTNAME", "teccheck.c4grwswsltbr.us-east-2.rds.amazonaws.com");
+define("HOSTNAME", "localhost");
+//define("HOSTNAME", "teccheck.c4grwswsltbr.us-east-2.rds.amazonaws.com");
 define("USERNAME", "root");
-define("PASSWORD", "06720Doctores!");
+define("PASSWORD", "dr4g0n");
+//define("PASSWORD", "06720Doctores!");
 
 class DB
 {
