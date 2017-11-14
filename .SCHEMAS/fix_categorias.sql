@@ -12,11 +12,3 @@ DELETE FROM wp_pwgb_terms WHERE term_id in (334,311,309,387);
 
 DELETE FROM wp_pwgb_term_taxonomy WHERE  term_id in (334,311,309,387);
 
-DELETE FROM wp_pwgb_term_relationships 
-WHERE
-    term_taxonomy_id IN (SELECT 
-        x.term_taxonomy_id
-    FROM
-        wp_pwgb_term_taxonomy AS x
-            INNER JOIN
-        wp_pwgb_terms as t ON t.term_id = x.term_id WHERE t.term_id in (334,311,309,387));
