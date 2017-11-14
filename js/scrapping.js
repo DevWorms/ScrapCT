@@ -1,6 +1,6 @@
 
-//var respiro =  (2 * 60 * 1000);
-var respiro = 1000;
+var respiro =  (2 * 60 * 1000);
+//var respiro = 1000;
 var inicio = 0;
 var fin = 0;
 var cuantosProductos = 0;
