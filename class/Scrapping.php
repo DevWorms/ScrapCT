@@ -32,10 +32,6 @@ class Scrapping
         $this->block = 10;
         $this->client = new Client();
         $this->db = DB::init()->getDB();
-
-        if (ini_get('max_execution_time') < 300) {
-                ini_set('max_execution_time', 300);
-        }
     }
 
     /**

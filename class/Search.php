@@ -28,9 +28,7 @@ class Search
         $this->client = new Client();
         $this->gClient = new GuzzleClient();
         $this->db = DB::init()->getDB();
-        if (ini_get('max_execution_time') < 300) {
-                ini_set('max_execution_time', 300);
-        }
+
     }
 
     /**
