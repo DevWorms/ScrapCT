@@ -137,7 +137,7 @@ class Scrapping
 
         return $response;
     }
-
+    
     public function init($categoria,$hasta,$total) {
         $limites = " LIMIT " . $hasta . " , " . $total;
 

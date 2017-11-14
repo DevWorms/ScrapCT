@@ -861,7 +861,7 @@ class Search
         
         $query = "SELECT tx.term_taxonomy_id,t.name from wp_pwgb_terms as t  
                     inner join wp_pwgb_term_taxonomy  as tx ON t.term_id = tx.term_id 
-                    WHERE tx.taxonomy = 'category'";
+                    WHERE tx.taxonomy = 'category' ORDER BY t.name DESC";
         $pdo = $this->db->prepare($query);
         $pdo->execute();
         $result = $pdo->fetchAll();

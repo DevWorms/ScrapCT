@@ -93,7 +93,8 @@ class AmazonConnection
      * @return array
      */
     public function updateAmazonPrice($amazon_asin, $price)
-    {
+    {   
+        $prueba = "Hola mundo";
         try {
             $query = "SELECT post_id FROM wp_pwgb_postmeta WHERE meta_key='asin' AND meta_value=:asin;";
             $pdo = $this->db->prepare($query);
@@ -104,7 +105,7 @@ class AmazonConnection
             if (count($response) > 0) {
                 $query = "UPDATE wp_pwgb_postmeta SET meta_value=:price WHERE meta_key='price_amazon' AND post_id=:post_id;";
                 $pdo2 = $this->db->prepare($query);
-                $pdo2->bindValue(":price", $price, PDO::PARAM_INT);
+                $pdo2->bindValue(":price", $prueba, PDO::PARAM_INT);
                 $pdo2->bindValue(":post_id", $response[0]['post_id'], PDO::PARAM_INT);
                 $pdo2->execute();
                 return ["status" => 1, "message" => "success"];
@@ -736,7 +737,7 @@ class AmazonConnection
             $division = ($item->Offers->Offer->OfferListing->Price->Amount) / 100;
             $precio = floor($division);
         } else {
-            $precio = "Sin precion obtenido";
+            $precio = "No disponible";
         }
         // regresamso el precio
         return $precio;
