@@ -151,22 +151,32 @@ class Search
 
     public function all($inicio, $fin , $id , $shop) {
         $limites = " LIMIT " . $inicio . " , " . $fin;
-
+        // base de l query
         $query = "SELECT p.post_title,m.meta_value,p.ID from  wp_pwgb_term_taxonomy as tx
                     inner join wp_pwgb_term_relationships as tr ON tx.term_taxonomy_id = tr.term_taxonomy_id
                     INNER JOIN wp_pwgb_posts as p ON tr.object_id = p.ID
-                    INNER JOIN wp_pwgb_postmeta m ON p.ID=m.post_id
-                    WHERE tx.term_taxonomy_id = :tax 
+                    INNER JOIN wp_pwgb_postmeta m ON p.ID=m.post_id";
+        // sin condicion de categoria
+        if($id == "allCategories"){
+            $query .= "  WHERE  p.post_type = 'reviews'
+                    AND p.post_status = 'publish'
+                    AND m.meta_key='model' ";
+        }else{
+            // por categoria
+            $query .= " WHERE tx.term_taxonomy_id = :tax 
                     AND p.post_type = 'reviews'
                     AND p.post_status = 'publish'
                     AND m.meta_key='model'";
+        }
+    
         $query .= $limites;
         $stm2 = $this->db->prepare($query);
-        $stm2->bindParam(":tax", $id);
+        if($id != "allCategories"){
+            $stm2->bindParam(":tax", $id);
+        }
         $stm2->execute();
         $productos = $stm2->fetchAll(PDO::FETCH_ASSOC);
         echo "Total: " . count($productos) . "<br><br>";
-
         foreach ($productos as $producto) {
             $this->init($producto["post_title"], $producto["meta_value"], $producto["ID"] , $shop);
         }
@@ -844,13 +854,21 @@ class Search
     }
 
     public function getCuantosByCategoria($id){
+        // base query
         $query = "SELECT COUNT(*) as cuantos from wp_pwgb_terms as t  
                     inner join wp_pwgb_term_taxonomy  as tx ON t.term_id = tx.term_id 
                     inner join wp_pwgb_term_relationships as tr ON tx.term_taxonomy_id = tr.term_taxonomy_id
-                    INNER JOIN wp_pwgb_posts as p ON tr.object_id = p.ID 
-                    WHERE tx.term_taxonomy_id = :taxonomy_id AND p.post_type = 'reviews' AND p.post_status = 'publish'";
+                    INNER JOIN wp_pwgb_posts as p ON tr.object_id = p.ID ";
+        if($id == "allCategories"){
+            $query .= " WHERE  p.post_type = 'reviews' AND p.post_status = 'publish'";
+        }else{
+            $query .= " WHERE tx.term_taxonomy_id = :taxonomy_id AND p.post_type = 'reviews' AND p.post_status = 'publish'";
+        }
+        
         $pdo = $this->db->prepare($query);
-        $pdo->bindParam(":taxonomy_id", $id);
+        if($id != "allCategories"){
+          $pdo->bindParam(":taxonomy_id", $id);  
+        }
         $pdo->execute();
         $result = $pdo->fetchAll();
         return $result[0]['cuantos'];

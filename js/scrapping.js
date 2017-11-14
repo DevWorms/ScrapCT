@@ -1,5 +1,6 @@
 
-var respiro =  (2 * 60 * 1000);
+//var respiro =  (2 * 60 * 1000);
+var respiro = 1000;
 var inicio = 0;
 var fin = 0;
 var cuantosProductos = 0;
@@ -140,40 +141,7 @@ function getURLs(){
 }
 
 
-/*function ejecutarScraping(){
-    $("#tercer_scrap").html("Ejecutando proceso de scraping ..." + "<img src='img/loading.gif' width='40' height='40'><br>");
-    var intervalos = getIntervalos();
-    totalIntervalos = intervalos.length - 1;
-    $.ajax({
-        url: 'class/Scrapping.php',
-        type: 'POST',
-        data: {'post': 'init' , 'inicio' : intervalos[indice].inicio , 'fin' : intervalos[indice].fin},
-        dataType: 'html',
-        success: function(response) {
-            printConsola(intervalos[indice].inicio + " , " + intervalos[indice].fin);
-            indice = indice + 1;
-            printConsola(response);
-        },
-        error: function(error) {
-            printConsola("<span style='color:red'>" + error + "</span>");
-        },complete:function(){
-            $("#tercer_scrap").attr('disabled', 'true');
-            if(indice <= totalIntervalos){
-                setTimeout(function(){
-                    ejecutarScraping();
-                },respiro);
-            }else{
-                $("#tercer_scrap").html("Completado");
-                indice = 0;
-                inicio = 1;
-                fin = 0;
-                $("#cuarto_scrap").html("Termino el proceso del Scraping");
-                printConsola("Proceso de scraping finalizado");
-            }
-        }
 
-    });
-}*/
 
 function getCategorias(){
     $.ajax({
@@ -187,7 +155,8 @@ function getCategorias(){
         success: function(response) {
             if (response.estado == 1) {
                 var categorias = response.categorias;
-                var options = "<option>Elige una categoria</optiom>";
+                var options = "<option value=''>Elige una categoria</optiom>";
+                options += "<option value='allCategories'>Todas las categorias</optiom>";
                 for (var i = categorias.length - 1; i >= 0; i--) {
                     options += "<option value='" + categorias[i].term_taxonomy_id+ "'>"+categorias[i].name+"</option>";
                 }
