@@ -155,7 +155,8 @@ function getCategorias(){
         success: function(response) {
             if (response.estado == 1) {
                 var categorias = response.categorias;
-                var options = "<option>Elige una categoria</optiom>";
+                var options = "<option>Elige una categoria</option>";
+                options += "<option value='allCategories'>Todas las categorias</option>";
                 for (var i = categorias.length - 1; i >= 0; i--) {
                     options += "<option value='" + categorias[i].term_taxonomy_id+ "'>"+categorias[i].name+"</option>";
                 }
