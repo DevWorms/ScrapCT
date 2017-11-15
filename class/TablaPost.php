@@ -22,6 +22,85 @@ class TablaPost
     }
 
     public function init() {
+
+        $query = "SELECT DISTINCT(post_id) FROM `wp_pwgb_postmeta` WHERE meta_key LIKE '%price%' ORDER BY post_id";
+        $pdo = $this->db->prepare($query);
+        $pdo->execute();
+
+        $productos = $pdo->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($productos as $producto) {
+            $update = $this->update($producto['post_id']);
+            echo $producto['post_id'] . ' | ' . $update[0] . ' ' . $update[1] . '<br>';
+
+            $precio = $update[1];
+            $id = $producto['post_id'];
+
+            $precio = intval($precio);
+            $mejor = number_format($precio,2);
+
+            $tienda = "";
+            if($update[0] == 'price_costco')
+                $tienda = 'Costco';
+            else if($update[0] == 'price_office_depot')
+                $tienda = 'Office Depot';
+            else if($update[0] == 'price_soriana')
+                $tienda = 'Soriana';
+            else if($update[0] == 'price_amazon')
+                $tienda = 'Amazon';
+            else if($update[0] == 'price_coppel')
+                $tienda = 'Coppel';
+            else if($update[0] == 'price_RadioShack')
+                $tienda = 'RadioShack';
+            else if($update[0] == 'price_cyberpuerta')
+                $tienda = 'Cyberpuerta';
+            else if($update[0] == 'price_linio')
+                $tienda = 'Linio';
+            else if($update[0] == 'price_liverpool')
+                $tienda = 'Liverpool';
+            else if($update[0] == 'price')
+                $tienda = 'Claroshop';
+
+
+            $query1 = "UPDATE `wp_pwgb_postmeta` SET meta_value = :mejor WHERE post_id = :id 
+                        AND meta_key = 'price_best'";
+            $pdo1 = $this->db->prepare($query1);
+            $pdo1->bindValue(":mejor", $mejor, PDO::PARAM_INT);
+            $pdo1->bindValue(":id", $id, PDO::PARAM_INT);
+            $pdo1->execute(); 
+
+
+            $query2 = "UPDATE `wp_pwgb_postmeta` SET meta_value = 'field_582e2c7b07a6d' WHERE post_id = :id 
+                        AND meta_key = '_price_best'";
+            $pdo2 = $this->db->prepare($query2);
+            $pdo2->bindValue(":id", $id, PDO::PARAM_INT);
+            $pdo2->execute(); 
+
+
+            $query3 = "UPDATE `wp_pwgb_postmeta` SET meta_value = :tienda WHERE post_id = :id 
+                        AND meta_key = 'best_shop'";
+            $pdo3 = $this->db->prepare($query3);
+            $pdo3->bindValue(":tienda", $tienda, PDO::PARAM_INT);
+            $pdo3->bindValue(":id", $id, PDO::PARAM_INT);
+            $pdo3->execute(); 
+
+        }
+
+    }
+
+    public function update($id){
+        $query = "SELECT meta_key, meta_value FROM `wp_pwgb_postmeta` WHERE `meta_key` LIKE '%price%' AND post_id = :post_id AND meta_key NOT LIKE ('_price_best') AND meta_key NOT LIKE ('price_best') AND meta_key LIKE ('price%') AND meta_value > 0 AND meta_key NOT LIKE '%performance%' ORDER BY CAST(`wp_pwgb_postmeta`.`meta_value` AS signed) ASC";
+        $pdo = $this->db->prepare($query);
+        $pdo->bindValue(":post_id", $id, PDO::PARAM_INT);
+        $pdo->execute();    
+
+        $update = $pdo->fetch(PDO::FETCH_ASSOC);
+
+        return array($update['meta_key'], $update['meta_value']);
+    }
+
+    /*
+    public function init() {
         $query = "SELECT DISTINCT post_id FROM `wp_pwgb_postmeta`";
         $pdo = $this->db->prepare($query);
         $pdo->execute();
@@ -160,6 +239,7 @@ class TablaPost
 
     	return $affiliateLinio;
     }
+    */
 }
 
 $c = new TablaPost();
