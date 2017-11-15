@@ -155,6 +155,63 @@
 						case 'price_radioshack':
 							$objPHPExcel->getActiveSheet()->SetCellValue('Z'.$row, $deta['meta_value']);
 							break;
+						case 'sanborns_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AB'.$row, $deta['meta_value']);
+                              break;
+                        case 'linio_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AC'.$row, $deta['meta_value']);
+                              break;
+                        case 'claroshop_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AD'.$row, $deta['meta_value']);  
+                              break;
+                        case 'coppel_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AE'.$row, $deta['meta_value']);
+                              break;
+                        case 'sears_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AF'.$row, $deta['meta_value']);
+                              break;
+                        case 'sams_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AG'.$row, $deta['meta_value']);
+                              break;
+                        case 'bestbuy_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AH'.$row, $deta['meta_value']);
+                              break;
+                        case 'walmart_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AI'.$row, $deta['meta_value']);
+                              break;
+                        case 'amazon_affiliate_link':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AJ'.$row, $deta['meta_value']);
+                              break;
+                        case 'linio_affiliate_link':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AK'.$row, $deta['meta_value']);
+                              break;
+                        case 'liverpool_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AL'.$row, $deta['meta_value']);
+                              break;
+                        case 'office_max_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AM'.$row, $deta['meta_value']);
+                              break;
+                        case 'office_depot_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AN'.$row, $deta['meta_value']);
+                              break;
+                        case 'palacio_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AO'.$row, $deta['meta_value']);
+                              break;
+                        case 'soriana_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AP'.$row, $deta['meta_value']);
+                              break;
+                        case 'elektra_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AQ'.$row, $deta['meta_value']);
+                              break;
+                        case 'sony_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AR'.$row, $deta['meta_value']);
+                              break;
+                        case 'costco_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AS'.$row, $deta['meta_value']);
+                              break;
+                        case 'radioshack_pl':
+                              $objPHPExcel->getActiveSheet()->SetCellValue('AT'.$row, $deta['meta_value']);
+                              break;
 						default:
 							break;
 					}
@@ -196,7 +253,27 @@
 			$objPHPExcel->getActiveSheet()->SetCellValue('X1','Precio Sony');
 			$objPHPExcel->getActiveSheet()->SetCellValue('Y1','Precio Costco');
 			$objPHPExcel->getActiveSheet()->SetCellValue('Z1','Precio RadioShack');
-			$objPHPExcel->getActiveSheet()->getStyle('A1:AA1')->applyFromArray($style);
+			$objPHPExcel->getActiveSheet()->SetCellValue('AB1','URL Sanborns');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AC1','URL Linio');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AD1','URL Claroshop');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AE1','URL Coppel');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AF1','URL Sears');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AG1','URL Sams');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AH1','URL BestBuy');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AI1','URL Walmart');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AJ1','URL Amazon Affiliate Link');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AK1','URL Linio Affiliate Link');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AL1','URL Liverpool');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AM1','URL OfficeMax');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AN1','URL OfficeDepot');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AO1','URL Palacio');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AP1','URL Soriana');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AQ1','URL Eelektra');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AR1','URL Sony');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AS1','URL Costco');
+			$objPHPExcel->getActiveSheet()->SetCellValue('AT1','URL RadioShack');
+
+			$objPHPExcel->getActiveSheet()->getStyle('A1:AT1')->applyFromArray($style);
 			
 		}
 		private function getMaster(){
