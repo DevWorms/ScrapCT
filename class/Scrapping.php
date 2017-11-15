@@ -140,16 +140,23 @@ class Scrapping
 
         $query = "SELECT p.* from  wp_pwgb_term_taxonomy as tx
                     inner join wp_pwgb_term_relationships as tr ON tx.term_taxonomy_id = tr.term_taxonomy_id
-                    INNER JOIN wp_pwgb_posts as p ON tr.object_id = p.ID
-                    WHERE tx.term_taxonomy_id = :tax 
+                    INNER JOIN wp_pwgb_posts as p ON tr.object_id = p.ID "; 
+        if($categoria == "allCategories"){
+            $query .= " WHERE  p.post_type = 'reviews'
+                    AND p.post_status = 'publish'";
+        }else{
+            $query .= " WHERE tx.term_taxonomy_id = :tax 
                     AND p.post_type = 'reviews'
-                    AND p.post_status = 'publish'"; 
+                    AND p.post_status = 'publish' ";
+        }
+
         $query .= $limites;
         $stm3 = $this->db->prepare($query);
-        $stm3->bindParam(":tax", $categoria);
+        if($categoria != "allCategories"){
+          $stm3->bindParam(":tax", $categoria);  
+        }
         $stm3->execute();
         $response = $stm3->fetchAll(PDO::FETCH_ASSOC);
-
         $this->getAllReviews($response, $hasta, $total,$shop);
     }
 

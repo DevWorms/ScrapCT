@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../app/DB.php';
-error_reporting(E_ALL);
+error_reporting(0);
 
 /**
  * Clase para la conexion con el api de Amazon
@@ -719,7 +719,17 @@ class AmazonConnection
         if ($xmlContent === FALSE) {
             $precion = null;
         } else {
-            $pxml = simplexml_load_string($xmlContent);
+            $pxml = null;
+            try{
+                $pxml = simplexml_load_string($xmlContent);
+            }catch(Exception $ex){
+                return 'No disponible';
+            }
+
+            if($pxml == null){
+                return 'No disponible';
+            }
+            
         }
         // obtenemos el item
         $item = $pxml->Items->Item;
