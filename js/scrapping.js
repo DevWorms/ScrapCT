@@ -80,7 +80,7 @@ function getCuantosByCategoria(){
 
 function getIntervalos(){
     
-    var intervalos = new Array();
+    var intervalosObtenidos = new Array();
     fin = 50;
     var intervalo = null;
 
@@ -88,17 +88,17 @@ function getIntervalos(){
         if((cuantosProductos - inicio) < 50){
             var ultimo = cuantosProductos - inicio;
             intervalo = {"inicio" : inicio , "fin" : ultimo};
-            intervalos.push(intervalo);
+            intervalosObtenidos.push(intervalo);
             break;
         }else{
             intervalo = {"inicio" : inicio , "fin" : fin};
-            intervalos.push(intervalo);
+            intervalosObtenidos.push(intervalo);
             inicio+= 50 ;
         }
 
     }
 
-    return intervalos;
+    return intervalosObtenidos;
 
 }
 

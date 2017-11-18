@@ -53,8 +53,8 @@ include 'header.php';
                         <br><br>
                     </li>
                     <li id="segundo_scrap" style="display: none;">
-                        <button class="btn btn-success" onclick="getPrecios();">
-                            Actualizar precio de productos
+                        <button class="btn btn-success" onclick="setIntervalos();getPrecios();">
+                            Obtener precio de productos
                         </button>
                         <br><br>
                     </li>
