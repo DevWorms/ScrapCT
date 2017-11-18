@@ -37,6 +37,7 @@ class Search
      * @param $company
      */
     public function init($name, $model, $post_id, $shop) {
+        echo "$name $model <br>";
         //foreach ($this->productsLink() as $shop) {
             switch ($shop) {
                 case 'sanborns_pl':
@@ -150,7 +151,7 @@ class Search
     public function all($inicio, $fin , $id , $shop) {
         $limites = " LIMIT " . $inicio . " , " . $fin;
         // base de l query
-        $query = "SELECT p.post_title,m.meta_value,p.ID from  wp_pwgb_term_taxonomy as tx
+        $query = "SELECT (SELECT meta_value FROM wp_pwgb_postmeta WHERE meta_key = 'company' and post_id = p.ID) as fabricante,m.meta_value as modelo,p.ID from  wp_pwgb_term_taxonomy as tx
                     inner join wp_pwgb_term_relationships as tr ON tx.term_taxonomy_id = tr.term_taxonomy_id
                     INNER JOIN wp_pwgb_posts as p ON tr.object_id = p.ID
                     INNER JOIN wp_pwgb_postmeta m ON p.ID=m.post_id";
@@ -164,7 +165,7 @@ class Search
             $query .= " WHERE tx.term_taxonomy_id = :tax 
                     AND p.post_type = 'reviews'
                     AND p.post_status = 'publish'
-                    AND m.meta_key='model'";
+                    AND m.meta_key='model' ";
         }
     
         $query .= $limites;
@@ -175,8 +176,9 @@ class Search
         $stm2->execute();
         $productos = $stm2->fetchAll(PDO::FETCH_ASSOC);
         echo "Total: " . count($productos) . "<br><br>";
+   
         foreach ($productos as $producto) {
-            $this->init($producto["post_title"], $producto["meta_value"], $producto["ID"] , $shop);
+            $this->init($producto['fabricante'], $producto['modelo'], $producto["ID"] , $shop);
         }
     }
 
