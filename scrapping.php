@@ -53,7 +53,7 @@ include 'header.php';
                         <br><br>
                     </li>
                     <li id="segundo_scrap" style="display: none;">
-                        <button class="btn btn-success" onclick="getURLs();">
+                        <button class="btn btn-success" onclick="setIntervalos();getURLs();">
                             Obtener URL de productos
                         </button>
                         <br><br>
