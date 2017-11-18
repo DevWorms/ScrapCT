@@ -1,10 +1,11 @@
-
-var respiro =  (2 * 60 * 1000);
+var respiro = 3000;
 var inicio = 0;
 var fin = 0;
 var cuantosProductos = 0;
 var totalIntervalos = 0;
 var indice = 0;
+var intervalos=null;
+
 function printConsola(texto){
 	var previo = "";
 	if($("#consola_scrapping").html()){
@@ -77,35 +78,30 @@ function getCuantosByCategoria(){
 }
 
 function getIntervalos(){
-    var intervalos = new Array();
-    fin = 35;
+    var intervalosObtenidos = new Array();
+    fin = 50;
     var intervalo = null;
 
-    while(fin <= cuantosProductos){
-        intervalo = {"inicio" : inicio , "fin" : fin};
-        intervalos.push(intervalo);
-        inicio = fin;
-        fin = fin + 35 ;
+    while(inicio < cuantosProductos){
+        if((cuantosProductos - inicio) < 50){
+            var ultimo = cuantosProductos - inicio;
+            intervalo = {"inicio" : inicio , "fin" : ultimo};
+            intervalosObtenidos.push(intervalo);
+            break;
+        }else{
+            intervalo = {"inicio" : inicio , "fin" : fin};
+            intervalosObtenidos.push(intervalo);
+            inicio+= 50 ;
+        }
+
     }
 
-    if(fin > cuantosProductos){
-        fin = fin -35;
-    }
-
-    if(fin < cuantosProductos){
-        intervalo = {"inicio" : fin , "fin" : cuantosProductos};
-        intervalos.push(intervalo);
-    }
-
-    return intervalos;
-
+    return intervalosObtenidos;
 }
 
 
 function getPrecios(){
     $("#segundo_scrap").html("Ejecutando scraping en precios " + "<img src='img/loading.gif' width='40' height='40'><br><br>");
-    var intervalos = getIntervalos();
-    totalIntervalos = intervalos.length - 1;
     var categoria = $("#categoria").val();
     var tienda = $("#tiendas").val();
     var datos = 'prueba=precios' + '&inicio='+  intervalos[indice].inicio + '&fin='+ intervalos[indice].fin + '&categoria=' + categoria + "&shop="+tienda;
@@ -133,6 +129,7 @@ function getPrecios(){
                 indice = 0;
                 inicio = 0;
                 fin = 0;
+                intervalos = null;
             }
         }
 
@@ -172,6 +169,11 @@ function getCategorias(){
             hideProgress();
         }
     });
+}
+
+function setIntervalos(){
+    intervalos = getIntervalos();
+    totalIntervalos = intervalos.length - 1;
 }
 
 $(document).ready(function() {
