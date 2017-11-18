@@ -1078,20 +1078,38 @@ class Scrapping
     public function getLiverpoolPrice($url) {
         try {
             $price = null;
+            $promoprice = null;
+            $finalPrice = null;
 
             $text = utf8_decode(file_get_contents($url));
 
             foreach (preg_split("/((\r?\n)|(\r\n?))/", $text) as $line) {
-                if (strpos($line, "requiredlistprice") !== false) {
-                    $price = $this->cleanPrice($line);
+
+                if (strpos($line, "requiredpromoprice") !== false) {
+                    $promoprice = $this->cleanPrice($line);
                 }
 
                 if (strpos($line, "requiredsaleprice") !== false) {
                     $price = $this->cleanPrice($line);
                 }
+
+                $promoprice = intval($promoprice);
+                $price = intval($price);
+
+                if($promoprice){
+                    if($promoprice < $price)
+                        $finalPrice = $promoprice;
+                    else
+                        $finalPrice = $price;
+                }
+                else
+                    $finalPrice = $price;
             }
 
-            return $price;
+            if($finalPrice <= 1)
+                $finalPrice = null;
+
+            return $finalPrice;
         } catch (Exception $ex) {
             echo "<br><div style='color: red;'>" . $ex->getMessage() . " " . $ex->getLine() . " " . $ex->getFile() .  "</div><br>";
         }
