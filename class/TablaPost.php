@@ -40,26 +40,28 @@ class TablaPost
             $mejor = number_format($precio,2);
 
             $tienda = "";
-            if($update[0] == 'price_costco')
-                $tienda = 'Costco';
-            else if($update[0] == 'price_office_depot')
-                $tienda = 'Office Depot';
-            else if($update[0] == 'price_soriana')
-                $tienda = 'Soriana';
-            else if($update[0] == 'price_amazon')
+
+
+            if($update[0] == 'price_amazon')
                 $tienda = 'Amazon';
-            else if($update[0] == 'price_coppel')
-                $tienda = 'Coppel';
-            else if($update[0] == 'price_RadioShack')
-                $tienda = 'RadioShack';
-            else if($update[0] == 'price_cyberpuerta')
-                $tienda = 'Cyberpuerta';
             else if($update[0] == 'price_linio')
                 $tienda = 'Linio';
             else if($update[0] == 'price_liverpool')
                 $tienda = 'Liverpool';
-            else if($update[0] == 'price')
+            else if($update[0] == 'shop')
                 $tienda = 'Claroshop';
+            else if($update[0] == 'price_coppel')
+                $tienda = 'Coppel';
+            else if($update[0] == 'price_sanborns')
+                $tienda = 'Sanborns';
+            else if($update[0] == 'price_sams')
+                $tienda = 'Sams';
+            else if($update[0] == 'price_sears')
+                $tienda = 'Sears';
+            else if($update[0] == 'price_cyberpuerta')
+                $tienda = 'Cyberpuerta';
+            else if($update[0] == 'price_bestbuy')
+                $tienda = 'BestBuy';
 
 
             $query1 = "UPDATE `wp_pwgb_postmeta` SET meta_value = :mejor WHERE post_id = :id 
